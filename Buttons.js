@@ -1,14 +1,3 @@
-let RADIUS = 10;
-
-let plus = new Image();
-plus.src = "images/plus.png";
-let concentric = new Image();
-concentric.src = "images/concentric.png";
-let coupled = new Image();
-coupled.src = "images/coupled.png";
-let trash = new Image();
-trash.src = "images/trash.png";
-
 class Button {
     constructor(image, x, y, w, h, action){
         this.image = image;
@@ -22,11 +11,21 @@ class Button {
     draw(){
         ctx.drawImage(this.image, this.x-this.w/2, this.y-this.h/2, this.w, this.h);
         if(this.boxed){
-            ctx.roundRect(this.x-this.w/2, this.y-this.h/2, this.w, this.h, RADIUS);
+            ctx.roundRect(this.x-this.w/2, this.y-this.h/2, this.w, this.h, BOX_RADIUS);
             ctx.stroke();
         }
     }
     containsPoint(x, y){
         return (x>=this.x-this.w/2 && x<=this.x+this.w/2) && (y>=this.y-this.h/2 && y<=this.y+this.h/2);
     }
+}
+
+//Button functions
+function newGear(){
+    selected = new Gear(anX(-1000), anY(-1000), 1);
+    document.onmouseup = null;
+    document.onmousemove = function(e){
+        selected.x = anX(mouse(e).x);
+        selected.y = anY(mouse(e).y);
+    };
 }

@@ -1,22 +1,3 @@
-let COLOR = "#F5D3C0";
-let BORDER_COLOR = "#6B5152"
-let BORDER_WIDTH = 15;
-let DOT_RAD = 9;
-let RATIO = 0.75;
-let DEFAULT_V = 0.01;
-let DEFAULT_R = 50;
-let FONT_RATIO = 0.5;
-
-function vectorMagnitude(dx, dy){
-    return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
-}
-
-function removeFromArray(item, array){
-    for(let i=array.length-1; i>=0; i--){
-        if(array[i]==item) array.splice(i, 1);
-    }
-}
-
 class Gear {
     constructor(x, y, r){
         this.x = x;
@@ -29,37 +10,37 @@ class Gear {
     draw(){
         //Basic gear with border
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.arc(nX(this.x), nY(this.y), nS(this.r), 0, Math.PI*2);
         ctx.fillStyle = BORDER_COLOR;
         ctx.fill();
         ctx.beginPath();
-        ctx.arc(this.x, this.y, this.r-BORDER_WIDTH, 0, Math.PI*2);
+        ctx.arc(nX(this.x), nY(this.y), nS(this.r-BORDER_WIDTH), 0, Math.PI*2);
         ctx.fillStyle = (selected==this ? "green" : COLOR);
         ctx.fill();
         //Tracking dot
-            ctx.beginPath();
-            ctx.arc(this.x + this.r*RATIO*Math.cos(this.a), this.y + this.r*RATIO*Math.sin(this.a), DOT_RAD, 0, 2*Math.PI);
-            ctx.fillStyle = "black";
-            ctx.fill();
+        ctx.beginPath();
+        ctx.arc(nX(this.x + this.r*DOT_POS_RATIO*Math.cos(this.a)), nY(this.y + this.r*DOT_POS_RATIO*Math.sin(this.a)), nS(DOT_RAD), 0, 2*Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
         //Center dot
         ctx.beginPath();
-        ctx.arc(this.x,this.y,DOT_RAD,0,2*Math.PI);
+        ctx.arc(nX(this.x),nY(this.y),nS(DOT_RAD),0,2*Math.PI);
         ctx.fillStyle = "black";
         ctx.fill();
         //Relative radius number
-        ctx.font = Math.round(0.5*this.r) + "px Arial";
-        ctx.fillText(Math.abs(Math.round(this.r/DEFAULT_R)) + "", this.x, this.y + this.r/2);
+        ctx.font = Math.round(nS(0.5*this.r)) + "px Arial";
+        ctx.fillText(Math.abs(Math.round(this.r/DEFAULT_R)) + "", nX(this.x), nY(this.y) + nS(this.r/2));
     }
     centerContainsPoint(x, y){
-        return vectorMagnitude(x-this.x, y-this.y) < this.r-BORDER_WIDTH;
+        return vectorMagnitude(x-nX(this.x), y-nY(this.y)) < nS(this.r-BORDER_WIDTH);
     }
     edgeContainsPoint(x,y){
-        let m = vectorMagnitude(x-this.x, y-this.y);
-        return m>=this.r-BORDER_WIDTH && m<=this.r;
+        let m = vectorMagnitude(x-nX(this.x), y-nY(this.y));
+        return m>=nS(this.r-BORDER_WIDTH) && m<=nS(this.r);
     }
-    move(dx, dy){
-        this.x += dx;
-        this.y += dy;
+    move(dx, dy){ //Inverse nS
+        this.x += dx/zoom;
+        this.y += dy/zoom;
     }
     rotate(){
         this.a += this.v;
