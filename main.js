@@ -2,6 +2,7 @@
 var selected = null;
 var ggs = []; //Array of gear groups. Holds groups of gears that are dragged as one. New gears automatically group themselves and populate this array.
 var zoom = 1;
+var targetRatio = newGoal();
 
 function mouse(e) {
     var rect = c.getBoundingClientRect();
@@ -14,18 +15,27 @@ function mouse(e) {
 function resetMoveEvent(){
     document.onmousemove = function(e){
         let last = ggs.length -1;
+        var i;
         for(i=last; i>=0&&ggs[i].containsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
             c.style.cursor = "move";
         } else {
-            var g;
             for(i=last; i>=0&&ggs[i].edgePoint(mouse(e).x, mouse(e).y)==null; i--);
             if(i>=0){
-                g = ggs[i].edgePoint(mouse(e).x, mouse(e).y);
-                let m = (mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x));
-                if(m>0) c.style.cursor = "nwse-resize";
+                let g = ggs[i].edgePoint(mouse(e).x, mouse(e).y);
+                if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
                 else c.style.cursor = "nesw-resize";
-            } else c.style.cursor = "auto";
+            } else {
+                var flag = false;
+                for(i=buttons.length-1; i>=0; i--){
+                    if(buttons[i].containsPoint(mouse(e).x, mouse(e).y)){
+                        flag = true;
+                        c.style.cursor = "pointer";
+                        buttons[i].targetScale = HOVER_SCALE;
+                    } else buttons[i].targetScale = 1;
+                }
+                if(!flag) c.style.cursor = "auto";
+            }
         }
     };
 }
@@ -102,6 +112,7 @@ function update(){
         });
     });
     buttons.forEach(function(b){
+        b.rescale();
         b.draw();
     });
     if(selected != null){
@@ -111,6 +122,8 @@ function update(){
         let fraction = decimalToFraction(Math.abs(selected.v/DEFAULT_V));
         ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     }
+    drawGoal();
+    checkGoal();
 }
 
 window.addEventListener("load", function(){
@@ -118,6 +131,7 @@ window.addEventListener("load", function(){
     c.height = CANVAS_HEIGHT;
     c.style = "border: 1px solid black";
     document.body.appendChild(c);
+    resetMoveEvent();
     setInterval(update, 1/FPS);
 });
 

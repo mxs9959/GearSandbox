@@ -31,13 +31,16 @@ trash.src = "images/trash.png";
 
 //Buttons
 let BOX_RADIUS = 10;
-let concentricB = new Button(concentric, 100, 660, 100, 100, ()=>{concentricB.boxed = !concentricB.boxed;});
-let coupledB = new Button(coupled, 250, 660, 100, 100, ()=>{coupledB.boxed = !coupledB.boxed;});
+let BUTTON_SIZE = 80;
+let concentricB = new Button(concentric, 100, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
+let coupledB = new Button(coupled, 250, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
 let buttons = [
-    new Button(plus, 860, 660, 100, 100, newGear),
+    new Button(plus, 860, 660, BUTTON_SIZE, BUTTON_SIZE, newGear),
     concentricB, coupledB,
-    new Button(trash, 710, 660, 100, 100, ()=>{if(selected!=null)removeFromArray(selected, selected.gg.gears);})
+    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{if(selected!=null)removeFromArray(selected, selected.gg.gears);})
 ];
+let HOVER_SCALE = 1.4;
+let SCALE_SPEED = 0.02;
 
 //Helper functions
 function vectorMagnitude(dx, dy){
@@ -69,6 +72,8 @@ function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
         d: Math.round(fraction.d)
     };
 }
+
+//Zoom transformation functions
 function nX(x){
     return CANVAS_WIDTH/2 + (x-CANVAS_WIDTH/2)*zoom;
 }
