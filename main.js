@@ -1,8 +1,16 @@
+//Buttons
+let concentricB = new Button(concentric, 100, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
+let coupledB = new Button(coupled, 250, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
+let buttons = [
+    new Button(plus, 860, 660, BUTTON_SIZE, BUTTON_SIZE, newGear),
+    concentricB, coupledB,
+    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, removeGear)
+];
+
 //Global variables
 var selected = null;
-var ggs = []; //Array of gear groups. Holds groups of gears that are dragged as one. New gears automatically group themselves and populate this array.
+var gears = [];
 var zoom = 1;
-var targetRatio = newGoal();
 
 function mouse(e) {
     var rect = c.getBoundingClientRect();
@@ -10,19 +18,19 @@ function mouse(e) {
       x:e.clientX - rect.left,
       y:e.clientY - rect.top
     };
-  }
+}
 
 function resetMoveEvent(){
     document.onmousemove = function(e){
-        let last = ggs.length -1;
+        let last = gears.length -1;
         var i;
-        for(i=last; i>=0&&ggs[i].containsPoint(mouse(e).x, mouse(e).y)==null; i--);
+        for(i=last; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
             c.style.cursor = "move";
         } else {
-            for(i=last; i>=0&&ggs[i].edgePoint(mouse(e).x, mouse(e).y)==null; i--);
+            for(i=last; i>=0&&gears[i].edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
             if(i>=0){
-                let g = ggs[i].edgePoint(mouse(e).x, mouse(e).y);
+                let g = gears[i];
                 if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
                 else c.style.cursor = "nesw-resize";
             } else {
@@ -41,45 +49,51 @@ function resetMoveEvent(){
 }
 
 function checkGears(e){
-    let last = ggs.length -1;
+    let last = gears.length -1;
     var origX = mouse(e).x;
     var origY = mouse(e).y;
     var i;
     //Searching for front gear group
-    for(i=last; i>=0&&ggs[i].containsPoint(origX, origY)==null; i--){};
+    for(i=last; i>=0&&gears[i].centerContainsPoint(origX, origY)==null; i--){};
     if(i>=0){
-        let newSelected = ggs[i].containsPoint(origX, origY);
+        let g = gears[i].centerContainsPoint(origX, origY);
+        var flag = false;
         //Coupling gears if necessary
-        if(newSelected.gg != selected.gg){
+        if(selected.child.g == null && g.child.g == null){
             if(concentricB.boxed){
-                selected.concentricWith(newSelected);
+                selected.concentricWith(g);
                 concentricB.boxed = false;
+                flag = true;
             }
             if(coupledB.boxed){
-                selected.coupleWith(newSelected);
+                selected.coupleWith(g);
                 coupledB.boxed = false;
+                flag = true;
             }
         }
+        //Making sure only first gears in each chain are in gears array
+        let temp = gears;
+        gears = [];
+        temp.forEach(function(gear){if(gear.parent.g == null && gear != g) gears.push(gear);});
+        //Adding selected gear to front
+        if(g.parent.g == null) gears.push(g);
         //Changing which gear is selected
-        selected = newSelected;
-        //Moving selected gear group to front
-        let temp = ggs[last];
-        ggs[last] = ggs[i];
-        ggs[i] = temp;
+        selected = g;
         //Moving gear
-        document.onmousemove = function(e){
-            ggs[last].move(mouse(e).x-origX, mouse(e).y-origY);
+        if(!flag) document.onmousemove = function(e){
+            g.move(mouse(e).x-origX, mouse(e).y-origY);
             origX = mouse(e).x;
             origY = mouse(e).y;
         }
         document.onmouseup = function(e){
             resetMoveEvent();
         }
+    //Resizing gears
     } else {
-        for(i=last; i>=0&&ggs[i].edgePoint(origX, origY)==null; i--){};
+        for(i=last; i>=0&&gears[i].edgeContainsPoint(origX, origY)==null; i--){};
         if(i>=0){
-            selected = ggs[i].edgePoint(origX, origY);
-            if(selected.gg.gears.length == 1){
+            selected = gears[i].edgeContainsPoint(origX, origY);
+            if(selected.parent.g == null && selected.child.g == null){
                     document.onmousemove = function(e){
                     var r = vectorMagnitude(mouse(e).x-nX(selected.x), mouse(e).y-nY(selected.y));
                     r = Math.round(r/DEFAULT_R/zoom)*DEFAULT_R; //Inverse nS
@@ -105,11 +119,9 @@ function checkButtons(e){
 
 function update(){
     ctx.clearRect(0,0,c.width,c.height);
-    ggs.forEach(function(gg){
-        gg.gears.forEach(function(g){
-            g.rotate();
-            g.draw();
-        });
+    gears.forEach(function(g){
+        g.rotate();
+        g.draw();
     });
     buttons.forEach(function(b){
         b.rescale();

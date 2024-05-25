@@ -1,4 +1,5 @@
 var availableGears = [2, 3, 5];
+var targetRatio = newGoal();
 
 function newGoal(){
     return decimalToFraction(

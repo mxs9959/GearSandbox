@@ -15,6 +15,7 @@ let DOT_POS_RATIO = 0.75;
 let DEFAULT_V = 0.01;
 let DEFAULT_R = 50;
 let FONT_RATIO = 0.5;
+let LINEWIDTH = 2;
 
 //Images
 let throttle = new Image();
@@ -32,13 +33,6 @@ trash.src = "images/trash.png";
 //Buttons
 let BOX_RADIUS = 10;
 let BUTTON_SIZE = 80;
-let concentricB = new Button(concentric, 100, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
-let coupledB = new Button(coupled, 250, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
-let buttons = [
-    new Button(plus, 860, 660, BUTTON_SIZE, BUTTON_SIZE, newGear),
-    concentricB, coupledB,
-    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{if(selected!=null)removeFromArray(selected, selected.gg.gears);})
-];
 let HOVER_SCALE = 1.4;
 let SCALE_SPEED = 0.02;
 

@@ -31,9 +31,21 @@ class Button {
 //Button functions
 function newGear(){
     selected = new Gear(anX(-1000), anY(-1000), 1);
+    gears.push(selected);
     document.onmouseup = null;
     document.onmousemove = function(e){
         selected.x = anX(mouse(e).x);
         selected.y = anY(mouse(e).y);
     };
+}
+function removeGear(){
+    if(selected != null){
+        if(selected.child.g != null){
+            selected.child.g.parent = {g: null, t: 0};
+        }
+        if(selected.parent.g != null){
+            selected.parent.g.child = {g: null, t:0};
+        }
+        removeFromArray(selected, gears);
+    }
 }
