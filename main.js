@@ -117,16 +117,29 @@ function checkButtons(e){
     });
 }
 
+function drawBg(){
+    for(let i=-1; i<=1; i+=2){
+        for(let y = 0+BG_DOT_SPACING/2; y<=anY(i>0 ? CANVAS_HEIGHT : 2*ZOOM_CENTER.y); y+=BG_DOT_SPACING){
+            for(let x = 0+BG_DOT_SPACING/2; x<=anX(CANVAS_WIDTH); x+=BG_DOT_SPACING){
+                for(let j=-1; j<=1; j+=2){
+                    ctx.beginPath();
+                    ctx.arc(nX(CANVAS_WIDTH/2+x*j), nY(ZOOM_CENTER.y+y*i), nS(BG_DOT_RAD), 0, Math.PI*2);
+                    ctx.fillStyle = "black";
+                    ctx.fill();
+                }
+            }
+        }
+    }
+}
+
 function update(){
     ctx.clearRect(0,0,c.width,c.height);
+    drawBg();
     gears.forEach(function(g){
         g.rotate();
         g.draw();
     });
-    buttons.forEach(function(b){
-        b.rescale();
-        b.draw();
-    });
+    //Drawing speed ratio display
     if(selected != null){
         ctx.drawImage(throttle, 790, 25, 60, 60);
         ctx.font = "75px Arial";
@@ -134,8 +147,21 @@ function update(){
         let fraction = decimalToFraction(Math.abs(selected.v/DEFAULT_V));
         ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     }
-    drawGoal();
-    checkGoal();
+    //Drawing button bar
+    ctx.beginPath();
+    ctx.rect(0, CANVAS_HEIGHT-BAR_HEIGHT, CANVAS_WIDTH, BAR_HEIGHT);
+    ctx.fillStyle = "white";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(0, CANVAS_HEIGHT-BAR_HEIGHT);
+    ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT-BAR_HEIGHT);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = GROUND_HEIGHT;
+    ctx.stroke();
+    buttons.forEach(function(b){
+        b.rescale();
+        b.draw();
+    });
 }
 
 window.addEventListener("load", function(){

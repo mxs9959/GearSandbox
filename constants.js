@@ -4,7 +4,8 @@ let ctx = c.getContext("2d");
 let CANVAS_WIDTH = 960;
 let CANVAS_HEIGHT = 720;
 let FPS = 30;
-let ZOOM_SPEED = 1.05;
+let ZOOM_SPEED = 1.04;
+let BG_DOT_RAD = 2.2;
 
 //Gears
 let COLOR = "#F5D3C0";
@@ -35,6 +36,12 @@ let BOX_RADIUS = 10;
 let BUTTON_SIZE = 80;
 let HOVER_SCALE = 1.4;
 let SCALE_SPEED = 0.02;
+let BAR_HEIGHT = 120;
+let GROUND_HEIGHT = 8;
+
+//Dependency problems that mess with my organization:
+let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT-BAR_HEIGHT};
+let BG_DOT_SPACING = DEFAULT_R*2;
 
 //Helper functions
 function vectorMagnitude(dx, dy){
@@ -69,16 +76,16 @@ function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
 
 //Zoom transformation functions
 function nX(x){
-    return CANVAS_WIDTH/2 + (x-CANVAS_WIDTH/2)*zoom;
+    return ZOOM_CENTER.x + (x-ZOOM_CENTER.x)*zoom;
 }
 function anX(x){ //Inverse
-    return (x-CANVAS_WIDTH/2)/zoom + CANVAS_WIDTH/2;
+    return (x-ZOOM_CENTER.x)/zoom + ZOOM_CENTER.x;
 }
 function nY(y){
-    return CANVAS_HEIGHT/2 + (y-CANVAS_HEIGHT/2)*zoom;
+    return ZOOM_CENTER.y + (y-ZOOM_CENTER.y)*zoom;
 }
 function anY(y){
-    return (y-CANVAS_HEIGHT/2)/zoom + CANVAS_HEIGHT/2;
+    return (y-ZOOM_CENTER.y)/zoom + ZOOM_CENTER.y;
 }
 function nS(s){
     return s*zoom;

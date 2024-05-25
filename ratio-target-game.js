@@ -1,3 +1,5 @@
+//SIMPLE, ALTERNATE GAME. NOT PART OF FINAL PRODUCT.
+
 var availableGears = [2, 3, 5];
 var targetRatio = newGoal();
 

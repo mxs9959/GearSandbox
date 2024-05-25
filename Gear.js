@@ -83,6 +83,7 @@ class Gear {
         if(this.child.g != null) this.child.g.rotate();
     }
     coupleWith(otherGear){
+        if(this == otherGear) return;
         if(this.parent.g!=null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 1};
         otherGear.child = {g: this, t: 1};
@@ -99,6 +100,7 @@ class Gear {
         }
     }
     concentricWith(otherGear){
+        if(this == otherGear) return;
         if(this.parent.g != null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 0};
         otherGear.child = {g: this, t: 0};
