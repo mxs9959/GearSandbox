@@ -81,7 +81,10 @@ class Gear {
         }
     }
     rotate(){
-        if(this.parent.g != null) this.v = -this.parent.g.v*(this.parent.g.r/this.r);
+        if(this.parent.g != null){
+            if(this.parent.t == 0) this.v = this.parent.g.v;
+            if(this.parent.t == 1) this.v = -this.parent.g.v*(this.parent.g.r/this.r);
+        }
         if(this.pulley != null) this.v = this.pulley.v/this.r*(this.pulley.ccw?-1:1);
         this.a += this.v;
         if(this.child.g != null && this.child.g.pulley == null) this.child.g.rotate();
