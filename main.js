@@ -1,16 +1,22 @@
+//Global variables
+var selected = null;
+var gears = [];
+var zoom = 1;
+var view_displacement = {x: 0, y: 0};
+let effortPulley = new Pulley(600, [new Effort(0)]);
+let loadPulley;
+var std_v = DEFAULT_V;
+
 //Buttons
 let concentricB = new Button(concentric, 100, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
 let coupledB = new Button(coupled, 250, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
 let buttons = [
     new Button(plus, 860, 660, BUTTON_SIZE, BUTTON_SIZE, newGear),
     concentricB, coupledB,
-    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, removeGear)
+    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, removeGear),
+    new Button(play, 400, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{effortPulley.play();}),
+    new Button(reset, 550, 660, 0.9*BUTTON_SIZE, BUTTON_SIZE, ()=>{effortPulley.reset();})
 ];
-
-//Global variables
-var selected = null;
-var gears = [];
-var zoom = 1;
 
 function mouse(e) {
     var rect = c.getBoundingClientRect();
@@ -74,9 +80,9 @@ function checkGears(e){
         //Making sure only first gears in each chain are in gears array
         let temp = gears;
         gears = [];
-        temp.forEach(function(gear){if(gear.parent.g == null && gear != g) gears.push(gear);});
+        temp.forEach(function(gear){if((gear.parent.g == null || gear.pulley != null)&& gear != g) gears.push(gear);});
         //Adding selected gear to front
-        if(g.parent.g == null) gears.push(g);
+        if(g.parent.g == null || g.pulley != null ) gears.push(g);
         //Changing which gear is selected
         selected = g;
         //Moving gear
@@ -88,12 +94,13 @@ function checkGears(e){
         document.onmouseup = function(e){
             resetMoveEvent();
         }
+        return true;
     //Resizing gears
     } else {
         for(i=last; i>=0&&gears[i].edgeContainsPoint(origX, origY)==null; i--){};
         if(i>=0){
             selected = gears[i].edgeContainsPoint(origX, origY);
-            if(selected.parent.g == null && selected.child.g == null){
+            if(selected.parent.g == null && selected.child.g == null && selected.pulley == null){
                     document.onmousemove = function(e){
                     var r = vectorMagnitude(mouse(e).x-nX(selected.x), mouse(e).y-nY(selected.y));
                     r = Math.round(r/DEFAULT_R/zoom)*DEFAULT_R; //Inverse nS
@@ -104,47 +111,52 @@ function checkGears(e){
                     resetMoveEvent();
                 }
             }
+            return true;
         }
     }
 
 }
 
 function checkButtons(e){
+    var flag = false;
     buttons.forEach(function(b){
         if(b.containsPoint(mouse(e).x, mouse(e).y)){
             b.action();
+            flag = true;
         }
     });
+    return flag;
 }
 
 function drawBg(){
-    for(let i=-1; i<=1; i+=2){
-        for(let y = 0+BG_DOT_SPACING/2; y<=anY(i>0 ? CANVAS_HEIGHT : 2*ZOOM_CENTER.y); y+=BG_DOT_SPACING){
-            for(let x = 0+BG_DOT_SPACING/2; x<=anX(CANVAS_WIDTH); x+=BG_DOT_SPACING){
-                for(let j=-1; j<=1; j+=2){
-                    ctx.beginPath();
-                    ctx.arc(nX(CANVAS_WIDTH/2+x*j), nY(ZOOM_CENTER.y+y*i), nS(BG_DOT_RAD), 0, Math.PI*2);
-                    ctx.fillStyle = "black";
-                    ctx.fill();
-                }
-            }
+    for(let y=ZOOM_CENTER.y-BG_DOT_SPACING*Math.ceil((ZOOM_CENTER.y-anY(0))/BG_DOT_SPACING)-BG_DOT_SPACING/2; y<=anY(CANVAS_HEIGHT); y+=BG_DOT_SPACING){
+        for(let x=ZOOM_CENTER.x-BG_DOT_SPACING*Math.ceil((ZOOM_CENTER.x-anX(0))/BG_DOT_SPACING); x<=anX(CANVAS_WIDTH); x+=BG_DOT_SPACING){
+            ctx.beginPath();
+            ctx.arc(nX(x), nY(y), nS(BG_DOT_RAD), 0, Math.PI*2);
+            ctx.fillStyle = "black";
+            ctx.fill();
         }
     }
 }
 
 function update(){
+    //Clear screen and draw background
     ctx.clearRect(0,0,c.width,c.height);
     drawBg();
+    //Rotate and draw gears
     gears.forEach(function(g){
         g.rotate();
         g.draw();
     });
+    //Advance and draw pulleys
+    effortPulley.advance();
+    effortPulley.draw();
     //Drawing speed ratio display
     if(selected != null){
         ctx.drawImage(throttle, 790, 25, 60, 60);
         ctx.font = "75px Arial";
         ctx.textAlign = "center";
-        let fraction = decimalToFraction(Math.abs(selected.v/DEFAULT_V));
+        let fraction = decimalToFraction(Math.abs(selected.v/std_v));
         ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     }
     //Drawing button bar
@@ -174,8 +186,20 @@ window.addEventListener("load", function(){
 });
 
 c.addEventListener("mousedown", function(e){
-    checkButtons(e);
-    checkGears(e);
+    if(!checkButtons(e) && !checkGears(e)){
+        var origX = mouse(e).x;
+        var origY = mouse(e).y;
+        document.onmousemove = function(e){
+            view_displacement.x += mouse(e).x - origX;
+            view_displacement.y += mouse(e).y - origY;
+            origX = mouse(e).x;
+            origY = mouse(e).y;
+            if(view_displacement.y<0) view_displacement.y = 0;
+        };
+        document.onmouseup = function(e){
+            resetMoveEvent();
+        };
+    }
 });
 
 c.addEventListener("wheel", function(e){

@@ -1,5 +1,5 @@
 class Gear {
-    constructor(x, y, r){
+    constructor(x, y, r, pulley=null){
         this.x = x;
         this.y = y;
         this.r = r*DEFAULT_R;
@@ -13,6 +13,7 @@ class Gear {
             g: null,
             t: 0
         }
+        this.pulley = pulley;
     }
     draw(){
         //Basic gear with border
@@ -69,28 +70,30 @@ class Gear {
         } else return p;
     }
     move(dx, dy, indirect=false){ //Inverse nS
+        if(this.pulley != null) return;
         this.x += dx/zoom;
         this.y += dy/zoom;
         if(this.child.g != null) this.child.g.move(dx, dy, true);
         if(this.parent.g != null && !indirect){
             this.parent.g.child = {g: null, t: 0};
             this.parent = {g: null, t: 0};
-            gears.push(this);
+            if(this.pulley == null) gears.push(this);
         }
     }
     rotate(){
+        if(this.parent.g != null) this.v = -this.parent.g.v*(this.parent.g.r/this.r);
+        if(this.pulley != null) this.v = this.pulley.v/this.r*(this.pulley.ccw?-1:1);
         this.a += this.v;
-        if(this.child.g != null) this.child.g.rotate();
+        if(this.child.g != null && this.child.g.pulley == null) this.child.g.rotate();
     }
     coupleWith(otherGear){
-        if(this == otherGear) return;
+        if(this == otherGear || this.pulley != null) return;
         if(this.parent.g!=null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 1};
         otherGear.child = {g: this, t: 1};
         let k = (otherGear.r+this.r)/vectorMagnitude(this.x-otherGear.x, this.y-otherGear.y);
         this.x = otherGear.x + (this.x-otherGear.x)*k;
         this.y = otherGear.y + (this.y-otherGear.y)*k;
-        this.v = -otherGear.v*(otherGear.r/this.r);
         if(this.x<otherGear.x){
             this.a = Math.atan((this.y-otherGear.y)/(this.x-otherGear.x));
             otherGear.a = this.a + Math.PI;
@@ -100,7 +103,7 @@ class Gear {
         }
     }
     concentricWith(otherGear){
-        if(this == otherGear) return;
+        if(this == otherGear || this.pulley != null) return;
         if(this.parent.g != null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 0};
         otherGear.child = {g: this, t: 0};

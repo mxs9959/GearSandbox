@@ -29,15 +29,26 @@ let coupled = new Image();
 coupled.src = "images/coupled.png";
 let trash = new Image();
 trash.src = "images/trash.png";
-
+let pickup = new Image();
+pickup.src = "images/pickup.png";
+let play = new Image();
+play.src = "images/play.png";
+let reset = new Image();
+reset.src = "images/reset.png";
 
 //Buttons
 let BOX_RADIUS = 10;
-let BUTTON_SIZE = 80;
+let BUTTON_SIZE = 70;
 let HOVER_SCALE = 1.4;
 let SCALE_SPEED = 0.02;
 let BAR_HEIGHT = 120;
 let GROUND_HEIGHT = 8;
+
+//Pulleys
+let PULLEY_CLEARANCE = 10;
+let ROPE_THICKNESS = 3;
+let STD_FORCE = 0.25;
+let EFFORT_DX = 150;
 
 //Dependency problems that mess with my organization:
 let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT-BAR_HEIGHT};
@@ -73,19 +84,25 @@ function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
         d: Math.round(fraction.d)
     };
 }
+//Yes, you can count on me to incorporate differential calculus into my code.
+//Only returns correct value when point is is in QI or QIV relative to circle. (Add pi to the end to fix that.)
+function getTangentPoint(px, py, cx, cy, r, invert){
+    let s = (invert?-1:1)*(Math.PI/2 - Math.asin(r/vectorMagnitude(px-cx,py-cy))) + Math.atan((py-cy)/(px-cx));
+    return {x: r*Math.cos(s)+cx, y: r*Math.sin(s)+cy};
+}
 
 //Zoom transformation functions
 function nX(x){
-    return ZOOM_CENTER.x + (x-ZOOM_CENTER.x)*zoom;
+    return ZOOM_CENTER.x + (x-ZOOM_CENTER.x)*zoom + view_displacement.x;
 }
 function anX(x){ //Inverse
-    return (x-ZOOM_CENTER.x)/zoom + ZOOM_CENTER.x;
+    return ((x-view_displacement.x)-ZOOM_CENTER.x)/zoom + ZOOM_CENTER.x;
 }
 function nY(y){
-    return ZOOM_CENTER.y + (y-ZOOM_CENTER.y)*zoom;
+    return ZOOM_CENTER.y + (y-ZOOM_CENTER.y)*zoom + view_displacement.y;
 }
 function anY(y){
-    return (y-ZOOM_CENTER.y)/zoom + ZOOM_CENTER.y;
+    return ((y-view_displacement.y)-ZOOM_CENTER.y)/zoom + ZOOM_CENTER.y;
 }
 function nS(s){
     return s*zoom;

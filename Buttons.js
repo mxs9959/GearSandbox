@@ -39,7 +39,7 @@ function newGear(){
     };
 }
 function removeGear(){
-    if(selected != null){
+    if(selected != null && selected.pulley == null){
         if(selected.child.g != null){
             selected.child.g.parent = {g: null, t: 0};
         }
