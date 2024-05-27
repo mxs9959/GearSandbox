@@ -1,52 +1,36 @@
 class Pulley {
-    constructor(x, effort){
-        this.x = x;
-        this.gear = new Gear(x, CANVAS_HEIGHT-BAR_HEIGHT-PULLEY_CLEARANCE-DEFAULT_R, 1, this);
-        gears.push(this.gear);
-        selected = this.gear;
-        this.effort = effort;
-        this.reset();
-        this.v = 0;
-        this.ccw = true;
+    constructor(gear, side){
+        this.l = DEFAULT_L;
+        this.gear = gear;
+        this.side = side; //-1 is left, 1 is right
+        this.weight = 1;
+        this.ropeX = this.gear.x + this.side*this.gear.r;
+        this.y = this.gear.y;
     }
     draw(){
         ctx.beginPath();
-        ctx.moveTo(nX(this.effort[0].x), nY(CANVAS_HEIGHT-BAR_HEIGHT-this.effort[0].h/2));
-        let tangentPoint = getTangentPoint(this.effort[0].x, CANVAS_HEIGHT-BAR_HEIGHT-this.effort[0].h/2, this.gear.x, this.gear.y, this.gear.r, !this.ccw);
-        ctx.lineTo(nX(tangentPoint.x), nY(tangentPoint.y));
+        ctx.moveTo(nX(this.ropeX), nY(this.y));
+        ctx.lineTo(nX(this.ropeX), nY(this.y + this.l));
         ctx.strokeStyle = "black";
         ctx.lineWidth = nS(ROPE_THICKNESS);
         ctx.stroke();
-        this.effort.forEach((e) => {e.draw();});
-        this.gear.draw();
+        drawTrapezoid(nX(this.ropeX-LOAD_LT/2), nY(this.y+this.l), nS(LOAD_LT), nS(LOAD_LB), nS(LOAD_H));
+        ctx.font = Math.round(nS(0.5*LOAD_H)) + "px Arial";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "white";
+        ctx.fillText(Math.round(this.weight) + "", nX(this.ropeX), nY(this.y+this.l+LOAD_H/2+5));
+        ctx.fillStyle = "black";
     }
-    play(){
-        if(this.v>0) return;
-        this.effort.forEach((e)=>{this.v += e.f;}); //Change later!
-        std_v = this.v/this.gear.r;
+    snap(){
+        this.ropeX = this.gear.x + this.side*this.gear.r;
+        this.y = this.gear.y;
     }
-    advance(){
-        this.effort.forEach((e)=>{e.x += this.v;});
-    }
-    reset(){
-        this.v = 0;
-        this.effort.forEach((e)=>{e.x = this.x+EFFORT_DX;});
-    }
-}
-
-class Effort {
-    constructor(type){
-        this.x = -1000;
-        this.d = 0;
-        switch(type){
-            default: 
-                this.image = pickup;
-                this.h = 40;
-                this.w = 100;
-                this.f = STD_FORCE;
+    spool(){
+        this.l += this.side*this.gear.v*this.gear.r;
+        if(this.l<LIMIT_L && this.side*this.gear.v*this.gear.r<0){
+            var g = this.gear;
+            while(g.parent.g!=null) g = g.parent.g;
+            g.v = 0;
         }
-    }
-    draw(){
-        ctx.drawImage(this.image, nX(this.x-this.w/2), nY(CANVAS_HEIGHT-BAR_HEIGHT-this.h), nS(this.w), nS(this.h));
     }
 }

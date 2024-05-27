@@ -3,19 +3,17 @@ var selected = null;
 var gears = [];
 var zoom = 1;
 var view_displacement = {x: 0, y: 0};
-let effortPulley = new Pulley(600, [new Effort(0)]);
-let loadPulley;
 var std_v = DEFAULT_V;
+var playerPulley;
+var loadPulley;
 
 //Buttons
-let concentricB = new Button(concentric, 100, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
-let coupledB = new Button(coupled, 250, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
+let concentricB = new Button(concentric, 890, 220, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
+let coupledB = new Button(coupled, 890, 300, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
 let buttons = [
-    new Button(plus, 860, 660, BUTTON_SIZE, BUTTON_SIZE, newGear),
+    new Button(plus, 890, 140, BUTTON_SIZE, BUTTON_SIZE, newGear),
     concentricB, coupledB,
-    new Button(trash, 710, 660, BUTTON_SIZE, BUTTON_SIZE, removeGear),
-    new Button(play, 400, 660, BUTTON_SIZE, BUTTON_SIZE, ()=>{effortPulley.play();}),
-    new Button(reset, 550, 660, 0.9*BUTTON_SIZE, BUTTON_SIZE, ()=>{effortPulley.reset();})
+    new Button(trash, 890, 380, BUTTON_SIZE, BUTTON_SIZE, removeGear)
 ];
 
 function mouse(e) {
@@ -65,31 +63,37 @@ function checkGears(e){
         let g = gears[i].centerContainsPoint(origX, origY);
         var flag = false;
         //Coupling gears if necessary
-        if(selected.child.g == null && g.child.g == null){
+        if(g.child.g == null){
             if(concentricB.boxed){
                 selected.concentricWith(g);
                 concentricB.boxed = false;
                 flag = true;
+                playerPulley.snap();
+                loadPulley.snap();
             }
             if(coupledB.boxed){
                 selected.coupleWith(g);
                 coupledB.boxed = false;
                 flag = true;
+                playerPulley.snap();
+                loadPulley.snap();
             }
         }
         //Making sure only first gears in each chain are in gears array
         let temp = gears;
         gears = [];
-        temp.forEach(function(gear){if((gear.parent.g == null || gear.pulley != null)&& gear != g) gears.push(gear);});
+        temp.forEach(function(gear){if(gear.parent.g == null&& gear != g) gears.push(gear);});
         //Adding selected gear to front
-        if(g.parent.g == null || g.pulley != null ) gears.push(g);
+        if(g.parent.g == null) gears.push(g);
         //Changing which gear is selected
         selected = g;
         //Moving gear
         if(!flag) document.onmousemove = function(e){
-            g.move(mouse(e).x-origX, mouse(e).y-origY);
+            g.move((mouse(e).x-origX)/zoom, (mouse(e).y-origY)/zoom);
             origX = mouse(e).x;
             origY = mouse(e).y;
+            playerPulley.snap();
+            loadPulley.snap();
         }
         document.onmouseup = function(e){
             resetMoveEvent();
@@ -100,12 +104,14 @@ function checkGears(e){
         for(i=last; i>=0&&gears[i].edgeContainsPoint(origX, origY)==null; i--){};
         if(i>=0){
             selected = gears[i].edgeContainsPoint(origX, origY);
-            if(selected.parent.g == null && selected.child.g == null && selected.pulley == null){
-                    document.onmousemove = function(e){
+            if(selected.parent.g == null && selected.child.g == null){
+                document.onmousemove = function(e){
                     var r = vectorMagnitude(mouse(e).x-nX(selected.x), mouse(e).y-nY(selected.y));
                     r = Math.round(r/DEFAULT_R/zoom)*DEFAULT_R; //Inverse nS
                     if(r==0) selected.r = DEFAULT_R;
-                    else selected.r = r; 
+                    else selected.r = r;
+                    playerPulley.snap();
+                    loadPulley.snap();
                 }
                 document.onmouseup = function(e){
                     resetMoveEvent();
@@ -128,6 +134,32 @@ function checkButtons(e){
     return flag;
 }
 
+function checkPulleys(e){
+    let chosen = null;
+    if(Math.abs(anX(mouse(e).x)-playerPulley.ropeX)<LOAD_LT && anY(mouse(e).y)<=playerPulley.gear.y+playerPulley.l && anY(mouse(e).y)>playerPulley.gear.y){
+        chosen = playerPulley;
+    } else if(Math.abs(anX(mouse(e).x)-loadPulley.ropeX)<LOAD_LT && anY(mouse(e).y)<=loadPulley.gear.y+loadPulley.l && anY(mouse(e).y)>loadPulley.gear.y){
+        chosen = loadPulley;
+    }
+    if(chosen == null) return false;
+    document.onmousemove = function(e){
+        chosen.ropeX = anX(mouse(e).x);
+        chosen.y = anY(mouse(e).y);
+    };
+    document.onmouseup = function(e){
+        var i;
+        for(i=gears.length-1; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y) == null; i--);
+        if(i>=0){
+            let g = gears[i].centerContainsPoint(mouse(e).x, mouse(e).y);
+            chosen.gear = g;
+            chosen.side = anX(mouse(e).x) >= g.x ? 1 : -1;
+        }
+        chosen.snap();
+        resetMoveEvent();
+    };
+    return true;
+}
+
 function drawBg(){
     for(let y=ZOOM_CENTER.y-BG_DOT_SPACING*Math.ceil((ZOOM_CENTER.y-anY(0))/BG_DOT_SPACING)-BG_DOT_SPACING/2; y<=anY(CANVAS_HEIGHT); y+=BG_DOT_SPACING){
         for(let x=ZOOM_CENTER.x-BG_DOT_SPACING*Math.ceil((ZOOM_CENTER.x-anX(0))/BG_DOT_SPACING); x<=anX(CANVAS_WIDTH); x+=BG_DOT_SPACING){
@@ -148,9 +180,10 @@ function update(){
         g.rotate();
         g.draw();
     });
-    //Advance and draw pulleys
-    effortPulley.advance();
-    effortPulley.draw();
+    playerPulley.spool();
+    loadPulley.spool();
+    playerPulley.draw();
+    loadPulley.draw();
     //Drawing speed ratio display
     if(selected != null){
         ctx.drawImage(throttle, 790, 25, 60, 60);
@@ -159,17 +192,7 @@ function update(){
         let fraction = decimalToFraction(Math.abs(selected.v/std_v));
         ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     }
-    //Drawing button bar
-    ctx.beginPath();
-    ctx.rect(0, CANVAS_HEIGHT-BAR_HEIGHT, CANVAS_WIDTH, BAR_HEIGHT);
-    ctx.fillStyle = "white";
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(0, CANVAS_HEIGHT-BAR_HEIGHT);
-    ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT-BAR_HEIGHT);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = GROUND_HEIGHT;
-    ctx.stroke();
+    //Drawing buttons
     buttons.forEach(function(b){
         b.rescale();
         b.draw();
@@ -182,11 +205,14 @@ window.addEventListener("load", function(){
     c.style = "border: 1px solid black";
     document.body.appendChild(c);
     resetMoveEvent();
+    gears.push(new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1));
+    playerPulley = new Pulley(gears[0], 1);
+    loadPulley = new Pulley(gears[0], -1);
     setInterval(update, 1/FPS);
 });
 
 c.addEventListener("mousedown", function(e){
-    if(!checkButtons(e) && !checkGears(e)){
+    if(!checkButtons(e) && !checkGears(e) && !checkPulleys(e)){
         var origX = mouse(e).x;
         var origY = mouse(e).y;
         document.onmousemove = function(e){
@@ -194,7 +220,6 @@ c.addEventListener("mousedown", function(e){
             view_displacement.y += mouse(e).y - origY;
             origX = mouse(e).x;
             origY = mouse(e).y;
-            if(view_displacement.y<0) view_displacement.y = 0;
         };
         document.onmouseup = function(e){
             resetMoveEvent();

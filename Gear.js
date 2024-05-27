@@ -1,5 +1,5 @@
 class Gear {
-    constructor(x, y, r, pulley=null){
+    constructor(x, y, r){
         this.x = x;
         this.y = y;
         this.r = r*DEFAULT_R;
@@ -13,7 +13,6 @@ class Gear {
             g: null,
             t: 0
         }
-        this.pulley = pulley;
     }
     draw(){
         //Basic gear with border
@@ -70,14 +69,13 @@ class Gear {
         } else return p;
     }
     move(dx, dy, indirect=false){ //Inverse nS
-        if(this.pulley != null) return;
-        this.x += dx/zoom;
-        this.y += dy/zoom;
+        this.x += dx;
+        this.y += dy;
         if(this.child.g != null) this.child.g.move(dx, dy, true);
         if(this.parent.g != null && !indirect){
             this.parent.g.child = {g: null, t: 0};
             this.parent = {g: null, t: 0};
-            if(this.pulley == null) gears.push(this);
+            gears.push(this);
         }
     }
     rotate(){
@@ -85,18 +83,16 @@ class Gear {
             if(this.parent.t == 0) this.v = this.parent.g.v;
             if(this.parent.t == 1) this.v = -this.parent.g.v*(this.parent.g.r/this.r);
         }
-        if(this.pulley != null) this.v = this.pulley.v/this.r*(this.pulley.ccw?-1:1);
         this.a += this.v;
-        if(this.child.g != null && this.child.g.pulley == null) this.child.g.rotate();
+        if(this.child.g != null) this.child.g.rotate();
     }
     coupleWith(otherGear){
-        if(this == otherGear || this.pulley != null) return;
+        if(this == otherGear) return;
         if(this.parent.g!=null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 1};
         otherGear.child = {g: this, t: 1};
         let k = (otherGear.r+this.r)/vectorMagnitude(this.x-otherGear.x, this.y-otherGear.y);
-        this.x = otherGear.x + (this.x-otherGear.x)*k;
-        this.y = otherGear.y + (this.y-otherGear.y)*k;
+        this.move(otherGear.x + (this.x-otherGear.x)*k - this.x, otherGear.y + (this.y-otherGear.y)*k - this.y, true);
         if(this.x<otherGear.x){
             this.a = Math.atan((this.y-otherGear.y)/(this.x-otherGear.x));
             otherGear.a = this.a + Math.PI;
@@ -106,12 +102,11 @@ class Gear {
         }
     }
     concentricWith(otherGear){
-        if(this == otherGear || this.pulley != null) return;
+        if(this == otherGear) return;
         if(this.parent.g != null) this.parent.g.child = {g: null, t: 0};
         this.parent = {g: otherGear, t: 0};
         otherGear.child = {g: this, t: 0};
-        this.x = otherGear.x;
-        this.y = otherGear.y;
+        this.move(otherGear.x - this.x, otherGear.y - this.y, true);
         this.v = otherGear.v;
         this.a = otherGear.a;
     }

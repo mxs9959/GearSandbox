@@ -29,8 +29,6 @@ let coupled = new Image();
 coupled.src = "images/coupled.png";
 let trash = new Image();
 trash.src = "images/trash.png";
-let pickup = new Image();
-pickup.src = "images/pickup.png";
 let play = new Image();
 play.src = "images/play.png";
 let reset = new Image();
@@ -38,20 +36,20 @@ reset.src = "images/reset.png";
 
 //Buttons
 let BOX_RADIUS = 10;
-let BUTTON_SIZE = 70;
-let HOVER_SCALE = 1.4;
+let BUTTON_SIZE = 55;
+let HOVER_SCALE = 1.7;
 let SCALE_SPEED = 0.02;
-let BAR_HEIGHT = 120;
-let GROUND_HEIGHT = 8;
 
 //Pulleys
-let PULLEY_CLEARANCE = 10;
 let ROPE_THICKNESS = 3;
-let STD_FORCE = 0.25;
-let EFFORT_DX = 150;
+let DEFAULT_L = 125;
+let LIMIT_L = 75;
+let LOAD_LT = 50;
+let LOAD_H = 35;
+let LOAD_LB = 75;
 
 //Dependency problems that mess with my organization:
-let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT-BAR_HEIGHT};
+let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};
 let BG_DOT_SPACING = DEFAULT_R*2;
 
 //Helper functions
@@ -86,9 +84,19 @@ function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
 }
 //Yes, you can count on me to incorporate differential calculus into my code.
 //Only returns correct value when point is is in QI or QIV relative to circle. (Add pi to the end to fix that.)
+//Also, I decided that I don't need this after all. :/
 function getTangentPoint(px, py, cx, cy, r, invert){
     let s = (invert?-1:1)*(Math.PI/2 - Math.asin(r/vectorMagnitude(px-cx,py-cy))) + Math.atan((py-cy)/(px-cx));
     return {x: r*Math.cos(s)+cx, y: r*Math.sin(s)+cy};
+}
+function drawTrapezoid(x, y, lt, lb, h){
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x+lt, y);
+    ctx.lineTo(x+lt+(lb-lt)/2, y+h);
+    ctx.lineTo(x-(lb-lt)/2, y+h);
+    ctx.closePath();
+    ctx.fill();
 }
 
 //Zoom transformation functions
