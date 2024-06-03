@@ -34,9 +34,11 @@ class Gear {
         ctx.arc(nX(this.x),nY(this.y),nS(DOT_RAD),0,2*Math.PI);
         ctx.fill();
         //Relative radius number
+        ctx.textAlign = "center";
         ctx.font = Math.round(nS(0.5*this.r)) + "px Arial";
         ctx.fillText(Math.abs(Math.round(this.r/DEFAULT_R)) + "", nX(this.x), nY(this.y) + nS(this.r/2));
         
+        //Drawing children and outlines of obscured gears
         if(this.child.g!= null) this.child.g.draw();
         if(this.parent.g != null && this.parent.t == 0 && this.parent.g.r < this.r){
             ctx.beginPath();
@@ -45,6 +47,17 @@ class Gear {
             ctx.lineWidth = nS(LINEWIDTH);
             ctx.stroke();
             ctx.setLineDash([]);
+            ctx.lineWidth = 1;
+        }
+
+        //Drawing pulleys in order
+        if(this == playerPulley.gear){
+            playerPulley.spool();
+            playerPulley.draw("green");
+        }
+        if(this == loadPulley.gear){
+            loadPulley.spool();
+            loadPulley.draw("red");
         }
     }
     centerContainsPoint(x, y){

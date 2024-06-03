@@ -12,7 +12,8 @@ let coupledB = new Button(coupled, 890, 300, BUTTON_SIZE, BUTTON_SIZE, ()=>{coup
 let buttons = [
     new Button(plus, 890, 140, BUTTON_SIZE, BUTTON_SIZE, newGear),
     concentricB, coupledB,
-    new Button(trash, 890, 380, BUTTON_SIZE, BUTTON_SIZE, removeGear)
+    new Button(trash, 890, 380, BUTTON_SIZE, BUTTON_SIZE, removeGear),
+    new Button(reset, 890, 460, BUTTON_SIZE, BUTTON_SIZE, resetGears)
 ];
 
 function mouse(e) {
@@ -188,32 +189,28 @@ function getSpeedRatio(){ //Between playerPulley gear and loadPulley gear. This 
     return (flag?1:0)*ratio; //If the two gears are not linked, will return 0.
 }
 
-function getNetTorque(pulley){ //Gets net torque at pulley's gear
+function getNetTorque(pulley){ //Gets net torque at the base of pulley's gear train.
     var pt = playerPulley.weight*playerPulley.gear.r*(playerPulley.side==1?1:-1); //playerPulley torque
     var lt = loadPulley.weight*loadPulley.gear.r*(loadPulley.side==1?1:-1); //loadPulley torque
     var g = playerPulley.gear;
     while(g.parent.g != null){
-        if(g.parent.t == 1) pt*=-g.parent.g.r/g.r;
+        if(g.parent.t == 1) pt*=-g.parent.g.r/g.r; //Signs alternate with each gear in train.
         g = g.parent.g;
     }
     g = loadPulley.gear;
     while(g.parent.g != null){
-        if(g.parent.t==1) lt*=-g.parent.g/g.r;
+        if(g.parent.t==1) lt*=-g.parent.g.r/g.r;
         g = g.parent.g;
     }
     let sameChain = getSpeedRatio()!=0;
     let isPlayerPulley = pulley == playerPulley;
-    return (sameChain||isPlayerPulley?pt:0)+(sameChain||!isPlayerPulley?lt:0); //Signs alternate with each gear in chain.
+    return (sameChain||isPlayerPulley?pt:0)+(sameChain||!isPlayerPulley?lt:0); //Takes summation of possible torques, but ignores those outside of train.
+}
 
-    /*
-    g = pulley.gear;
-    pt = 1; //Now it's a ratio
-    while(g.parent.g != null){
-        if(g.parent.t == 1) pt*=g.parent.g.r/g.r;
-        g = g.parent.g;
-    }
-    return result_torque/pt;
-    */
+function resetGears(){
+    playerPulley.l = DEFAULT_L;
+    loadPulley.l = DEFAULT_L;
+    gears.forEach((g)=>{g.v = 0;});
 }
 
 function update(){
@@ -225,10 +222,6 @@ function update(){
         g.rotate();
         g.draw();
     });
-    playerPulley.spool();
-    loadPulley.spool();
-    playerPulley.draw("green");
-    loadPulley.draw("red");
     //Drawing speed ratio display
     ctx.drawImage(throttle, 790, 25, 60, 60);
     ctx.font = "75px Arial";
@@ -255,7 +248,7 @@ window.addEventListener("load", function(){
 });
 
 c.addEventListener("mousedown", function(e){
-    if(!checkButtons(e) && !checkGears(e) && !checkPulleys(e)){
+    if(!checkPulleys(e) && !checkGears(e) && !checkButtons(e)){
         var origX = mouse(e).x;
         var origY = mouse(e).y;
         document.onmousemove = function(e){

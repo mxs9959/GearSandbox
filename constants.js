@@ -46,7 +46,7 @@ let LIMIT_L = 75;
 let LOAD_LT = 50;
 let LOAD_H = 35;
 let LOAD_LB = 75;
-let M = 0.0000005;
+let M = 0.000005;
 
 //Dependency problems that mess with my organization:
 let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};

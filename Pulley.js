@@ -14,6 +14,7 @@ class Pulley {
         ctx.strokeStyle = "black";
         ctx.lineWidth = nS(ROPE_THICKNESS);
         ctx.stroke();
+        ctx.lineWidth = 1;
         ctx.fillStyle = pulleyColor;
         drawTrapezoid(nX(this.ropeX-LOAD_LT/2), nY(this.y+this.l), nS(LOAD_LT), nS(LOAD_LB), nS(LOAD_H));
         ctx.font = Math.round(nS(0.5*LOAD_H)) + "px Arial";
