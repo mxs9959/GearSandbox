@@ -3,7 +3,6 @@ var selected = null;
 var gears = [];
 var zoom = 1;
 var view_displacement = {x: 0, y: 0};
-var std_v = DEFAULT_V;
 var playerPulley;
 var loadPulley;
 
@@ -171,6 +170,52 @@ function drawBg(){
     }
 }
 
+function getSpeedRatio(){ //Between playerPulley gear and loadPulley gear. This is the reciprocal of the torque ratio.
+    var ratio = 1;
+    var g = playerPulley.gear;
+    var flag = g == loadPulley.gear;
+    while(g.child.g != null && g!=loadPulley.gear){
+        if(g.child.t == 1) ratio*=g.r/g.child.g.r;
+        if(g.child.g==loadPulley.gear) flag = true;
+        g = g.child.g;
+    }
+    if(!flag) ratio = 1;
+    while(g.parent.g != null && g!=loadPulley.gear){
+        if(g.parent.t == 1) ratio*=g.r/g.parent.g.r;
+        if(g.parent.g==loadPulley.gear) flag = true;
+        g = g.parent.g;
+    }
+    return (flag?1:0)*ratio; //If the two gears are not linked, will return 0.
+}
+
+function getNetTorque(pulley){ //Gets net torque at pulley's gear
+    var pt = playerPulley.weight*playerPulley.gear.r*(playerPulley.side==1?1:-1); //playerPulley torque
+    var lt = loadPulley.weight*loadPulley.gear.r*(loadPulley.side==1?1:-1); //loadPulley torque
+    var g = playerPulley.gear;
+    while(g.parent.g != null){
+        if(g.parent.t == 1) pt*=-g.parent.g.r/g.r;
+        g = g.parent.g;
+    }
+    g = loadPulley.gear;
+    while(g.parent.g != null){
+        if(g.parent.t==1) lt*=-g.parent.g/g.r;
+        g = g.parent.g;
+    }
+    let sameChain = getSpeedRatio()!=0;
+    let isPlayerPulley = pulley == playerPulley;
+    return (sameChain||isPlayerPulley?pt:0)+(sameChain||!isPlayerPulley?lt:0); //Signs alternate with each gear in chain.
+
+    /*
+    g = pulley.gear;
+    pt = 1; //Now it's a ratio
+    while(g.parent.g != null){
+        if(g.parent.t == 1) pt*=g.parent.g.r/g.r;
+        g = g.parent.g;
+    }
+    return result_torque/pt;
+    */
+}
+
 function update(){
     //Clear screen and draw background
     ctx.clearRect(0,0,c.width,c.height);
@@ -182,16 +227,14 @@ function update(){
     });
     playerPulley.spool();
     loadPulley.spool();
-    playerPulley.draw();
-    loadPulley.draw();
+    playerPulley.draw("green");
+    loadPulley.draw("red");
     //Drawing speed ratio display
-    if(selected != null){
-        ctx.drawImage(throttle, 790, 25, 60, 60);
-        ctx.font = "75px Arial";
-        ctx.textAlign = "center";
-        let fraction = decimalToFraction(Math.abs(selected.v/std_v));
-        ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
-    }
+    ctx.drawImage(throttle, 790, 25, 60, 60);
+    ctx.font = "75px Arial";
+    ctx.textAlign = "center";
+    let fraction = decimalToFraction(getSpeedRatio());
+    ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     //Drawing buttons
     buttons.forEach(function(b){
         b.rescale();

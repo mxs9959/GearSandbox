@@ -13,7 +13,6 @@ let BORDER_COLOR = "#6B5152"
 let BORDER_WIDTH = 15;
 let DOT_RAD = 9;
 let DOT_POS_RATIO = 0.75;
-let DEFAULT_V = 0.01;
 let DEFAULT_R = 50;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
@@ -47,6 +46,7 @@ let LIMIT_L = 75;
 let LOAD_LT = 50;
 let LOAD_H = 35;
 let LOAD_LB = 75;
+let M = 0.0000005;
 
 //Dependency problems that mess with my organization:
 let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};

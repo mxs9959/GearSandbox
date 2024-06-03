@@ -3,7 +3,7 @@ class Gear {
         this.x = x;
         this.y = y;
         this.r = r*DEFAULT_R;
-        this.v = DEFAULT_V;
+        this.v = 0;
         this.a = 0;
         this.parent = {
             g: null,

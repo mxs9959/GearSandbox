@@ -7,13 +7,14 @@ class Pulley {
         this.ropeX = this.gear.x + this.side*this.gear.r;
         this.y = this.gear.y;
     }
-    draw(){
+    draw(pulleyColor){
         ctx.beginPath();
         ctx.moveTo(nX(this.ropeX), nY(this.y));
         ctx.lineTo(nX(this.ropeX), nY(this.y + this.l));
         ctx.strokeStyle = "black";
         ctx.lineWidth = nS(ROPE_THICKNESS);
         ctx.stroke();
+        ctx.fillStyle = pulleyColor;
         drawTrapezoid(nX(this.ropeX-LOAD_LT/2), nY(this.y+this.l), nS(LOAD_LT), nS(LOAD_LB), nS(LOAD_H));
         ctx.font = Math.round(nS(0.5*LOAD_H)) + "px Arial";
         ctx.textAlign = "center";
@@ -26,11 +27,15 @@ class Pulley {
         this.y = this.gear.y;
     }
     spool(){
-        this.l += this.side*this.gear.v*this.gear.r;
-        if(this.l<LIMIT_L && this.side*this.gear.v*this.gear.r<0){
+        if(this.l<LIMIT_L && this.side*this.gear.v<0){
             var g = this.gear;
             while(g.parent.g!=null) g = g.parent.g;
             g.v = 0;
+        } else {
+            var g = this.gear;
+            while(g.parent.g!=null) g = g.parent.g;
+            g.v += M*getNetTorque(this)/g.r;
         }
+        this.l += this.side*this.gear.v*this.gear.r;
     }
 }
