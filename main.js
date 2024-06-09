@@ -13,7 +13,7 @@ let buttons = [
     new Button(plus, 890, 140, BUTTON_SIZE, BUTTON_SIZE, newGear),
     concentricB, coupledB,
     new Button(trash, 890, 380, BUTTON_SIZE, BUTTON_SIZE, removeGear),
-    new Button(reset, 890, 460, BUTTON_SIZE, BUTTON_SIZE, resetGears)
+    new Button(play, 890, 650, BUTTON_SIZE, BUTTON_SIZE, commit)
 ];
 
 function mouse(e) {
@@ -26,27 +26,37 @@ function mouse(e) {
 
 function resetMoveEvent(){
     document.onmousemove = function(e){
-        let last = gears.length -1;
-        var i;
-        for(i=last; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+        for(i=popups.length-1; i>=0; i--){
+            if(popups[i].button.containsPoint(mouse(e).x, mouse(e).y)){
+                c.style.cursor = "pointer";
+                popups[i].button.targetScale = HOVER_SCALE;
+            } else popups[i].button.targetScale = 1;
+        }
         if(i>=0){
-            c.style.cursor = "move";
+            c.style.cursor = "pointer";
         } else {
-            for(i=last; i>=0&&gears[i].edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+            let last = gears.length -1;
+            var i;
+            for(i=last; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
             if(i>=0){
-                let g = gears[i];
-                if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
-                else c.style.cursor = "nesw-resize";
+                c.style.cursor = "move";
             } else {
-                var flag = false;
-                for(i=buttons.length-1; i>=0; i--){
-                    if(buttons[i].containsPoint(mouse(e).x, mouse(e).y)){
-                        flag = true;
-                        c.style.cursor = "pointer";
-                        buttons[i].targetScale = HOVER_SCALE;
-                    } else buttons[i].targetScale = 1;
+                for(i=last; i>=0&&gears[i].edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+                if(i>=0){
+                    let g = gears[i];
+                    if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
+                    else c.style.cursor = "nesw-resize";
+                } else {
+                    var flag = false;
+                    buttons.forEach(function(b){
+                        if(b.containsPoint(mouse(e).x, mouse(e).y)){
+                            flag = true;
+                            c.style.cursor = "pointer";
+                            b.targetScale = HOVER_SCALE;
+                        } else b.targetScale = 1;
+                    });
+                    if(!flag) c.style.cursor = "auto";
                 }
-                if(!flag) c.style.cursor = "auto";
             }
         }
     };
@@ -134,6 +144,16 @@ function checkButtons(e){
     return flag;
 }
 
+function checkPopups(e){
+    var i;
+    for(i=popups.length-1; i>=0; i--){
+        if(popups[i].button.containsPoint(mouse(e).x, mouse(e).y)){
+            popups[i].button.action();
+        }
+    }
+    return i>=0;
+}
+
 function checkPulleys(e){
     let chosen = null;
     if(Math.abs(anX(mouse(e).x)-playerPulley.ropeX)<LOAD_LT && anY(mouse(e).y)<=playerPulley.gear.y+playerPulley.l && anY(mouse(e).y)>playerPulley.gear.y){
@@ -219,19 +239,28 @@ function update(){
     drawBg();
     //Rotate and draw gears
     gears.forEach(function(g){
-        g.rotate();
+        if(go) g.rotate();
         g.draw();
     });
     //Drawing speed ratio display
     ctx.drawImage(throttle, 790, 25, 60, 60);
-    ctx.font = "75px Arial";
+    ctx.font = "75px JB_Mono";
     ctx.textAlign = "center";
     let fraction = decimalToFraction(getSpeedRatio());
     ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
+    //Drawing player money display
+    ctx.drawImage(coins, 395, 15, 80, 80);
+    ctx.font = "50px JB_Mono";
+    ctx.textAlign = "left";
+    ctx.fillText("$" + $, 485, 70, 70);
     //Drawing buttons
     buttons.forEach(function(b){
         b.rescale();
         b.draw();
+    });
+    //Drawing popups
+    popups.forEach(function(p){
+        p.draw();
     });
 }
 
@@ -244,11 +273,12 @@ window.addEventListener("load", function(){
     gears.push(new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1));
     playerPulley = new Pulley(gears[0], 1);
     loadPulley = new Pulley(gears[0], -1);
+    generateWeights();
     setInterval(update, 1/FPS);
 });
 
 c.addEventListener("mousedown", function(e){
-    if(!checkPulleys(e) && !checkGears(e) && !checkButtons(e)){
+    if(!checkPopups(e) && !checkPulleys(e) && !checkGears(e) && !checkButtons(e)){
         var origX = mouse(e).x;
         var origY = mouse(e).y;
         document.onmousemove = function(e){

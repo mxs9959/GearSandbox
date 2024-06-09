@@ -6,6 +6,12 @@ let CANVAS_HEIGHT = 720;
 let FPS = 30;
 let ZOOM_SPEED = 1.04;
 let BG_DOT_RAD = 2.2;
+let FONT = new FontFace("JB_Mono", 'url(JetBrains_Mono/static/JetBrainsMono-Regular.ttf)');
+FONT.load().then(function(font){
+    document.fonts.add(font);
+});
+let GRAY = "#D5D5D5";
+let CORNER_RADIUS = 15;
 
 //Gears
 let COLOR = "#F5D3C0";
@@ -32,12 +38,20 @@ let play = new Image();
 play.src = "images/play.png";
 let reset = new Image();
 reset.src = "images/reset.png";
+let coins = new Image();
+coins.src = "images/coins.png";
+let check = new Image();
+check.src = "images/check.png";
 
 //Buttons
 let BOX_RADIUS = 10;
 let BUTTON_SIZE = 55;
-let HOVER_SCALE = 1.7;
+let HOVER_SCALE = 1.5;
 let SCALE_SPEED = 0.02;
+
+//Popups
+let POPUP_WIDTH = CANVAS_WIDTH*0.35;
+let POPUP_HEIGHT = CANVAS_HEIGHT*0.35;
 
 //Pulleys
 let ROPE_THICKNESS = 3;

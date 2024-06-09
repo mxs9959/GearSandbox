@@ -17,7 +17,7 @@ class Pulley {
         ctx.lineWidth = 1;
         ctx.fillStyle = pulleyColor;
         drawTrapezoid(nX(this.ropeX-LOAD_LT/2), nY(this.y+this.l), nS(LOAD_LT), nS(LOAD_LB), nS(LOAD_H));
-        ctx.font = Math.round(nS(0.5*LOAD_H)) + "px Arial";
+        ctx.font = Math.round(nS(0.5*LOAD_H)) + "px JB_Mono";
         ctx.textAlign = "center";
         ctx.fillStyle = "white";
         ctx.fillText(Math.round(this.weight) + "", nX(this.ropeX), nY(this.y+this.l+LOAD_H/2+5));
@@ -28,6 +28,7 @@ class Pulley {
         this.y = this.gear.y;
     }
     spool(){
+        if(!go) return;
         if(this.l<LIMIT_L && this.side*this.gear.v<0){
             var g = this.gear;
             while(g.parent.g!=null) g = g.parent.g;

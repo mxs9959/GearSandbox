@@ -35,7 +35,7 @@ class Gear {
         ctx.fill();
         //Relative radius number
         ctx.textAlign = "center";
-        ctx.font = Math.round(nS(0.5*this.r)) + "px Arial";
+        ctx.font = Math.round(nS(0.5*this.r)) + "px JB_Mono";
         ctx.fillText(Math.abs(Math.round(this.r/DEFAULT_R)) + "", nX(this.x), nY(this.y) + nS(this.r/2));
         
         //Drawing pulleys in order
