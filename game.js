@@ -1,10 +1,10 @@
 var gears = [];
 
 var availableGears = [1, 2, 3, 5];
-var difficulty = 2;
+var difficulty = 1;
 var popups = [];
 var go = false;
-var $ = C*availableGears[availableGears.length-1]; //Haha, the dollar sign can be a variable name!
+var $ = 100; //Haha, the dollar sign can be a variable name!
 /*
 How money works:
 
@@ -22,15 +22,31 @@ Players continue until they can no longer afford gears to balance the weights. T
 var spend$ = 0;
 var bonus = 0.25;
 
+var show_speed_display = false;
+
 function generateWeights(){
     //Mechanical advantage will be some product of availableGears over some other product of availableGears
     //Weights will correspond to each of those products
     //More difficult levels will have new availableGears factors and more composite products
+    var temp = [];
+    availableGears.forEach((r)=>{temp.push(r);});
+    temp.splice(0, 1);
+    var playerFactors = [];
+    var loadFactors = [];
+    var current = playerFactors;
+    while(temp.length>0){
+        let i = Math.floor(temp.length*Math.random())
+        current.push(temp[i]);
+        temp.splice(i, 1);
+        current = current==playerFactors? loadFactors : playerFactors;
+    }
+    while(playerFactors.length < difficulty) playerFactors.push(playerFactors[Math.floor(playerFactors.length*Math.random())]);
+    while(loadFactors.length < difficulty) loadFactors.push(loadFactors[Math.floor(loadFactors.length*Math.random())]);
     playerPulley.weight = 1;
     loadPulley.weight = 1;
     for(let i=0; i<difficulty; i++){
-        playerPulley.weight *= availableGears[Math.floor(Math.random()*availableGears.length)];
-        loadPulley.weight *= availableGears[Math.floor(Math.random()*availableGears.length)];
+        playerPulley.weight *= playerFactors[i];
+        loadPulley.weight *= loadFactors[i];
     }
 }
 
@@ -43,25 +59,34 @@ function snapR(r){
 }
 
 function commit(){
+    if(Math.round(spend$)>$){
+        popups.push(new Popup("You're in the hole!", "You cannot simulate the weights until your balance is positive.", "If you can't fix your balance, then it's game over!"));
+        return;
+    }
     go = true;
-    if(getNetTorque()==0) popups.push(new Popup("Success!", "You have balanced the weights!", "You profit $" + Math.round(spend$*getBonusMultiplier()) + ".", ()=>{
-        go = false;
-        updateSpend$();
-        $ += Math.round(spend$*getBonusMultiplier());
-        gears = [new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1)];
-        updateSpend$();
-        playerPulley.gear = gears[0];
-        playerPulley.side = 1;
-        loadPulley.gear = gears[0];
-        loadPulley.side = -1;
-        playerPulley.snap();
-        loadPulley.snap();
-        generateWeights();
-    }));
-    else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
-        resetGears();
-        go=false;
-    }));
+    window.setTimeout(function(){
+        if(getNetTorque()==0) popups.push(new Popup("Success!", "You have balanced the weights!", "You profit $" + Math.round(spend$*getBonusMultiplier()) + ".", ()=>{
+            go = false;
+            updateSpend$();
+            $ += Math.round(spend$*getBonusMultiplier());
+            gears = [new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1)];
+            updateSpend$();
+            playerPulley.gear = gears[0];
+            playerPulley.side = 1;
+            loadPulley.gear = gears[0];
+            loadPulley.side = -1;
+            playerPulley.snap();
+            loadPulley.snap();
+            assessGameProgress();
+            generateWeights();
+        }));
+        else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
+            resetGears();
+            go=false;
+            updateSpend$();
+            $ -= Math.round(spend$*getBonusMultiplier());
+        }));
+    }, GO_PAUSE);
 }
 
 function getGearCost(r){
@@ -78,19 +103,40 @@ function updateSpend$(){
         spend$ += getTrainCost(g);
     });
 }
-function getBonusMultiplier(){
-    return bonus*Math.log(difficulty)/Math.log(2); //Bonus multiplier also increases logarithmically.
+function getBonusMultiplier(){ //This controls game rate, essentially.
+    return bonus*difficulty;
+}
+
+function assessGameProgress(){
+    /*
+    The game's progress is measured by the player's current money balance.
+    For any given task in the game, the player will have a certain set of gears available and a certain maximum quantity of gears required.
+    There is a maximum price, then, to be able to complete a task.
+    If the player's balance exceeds the maximum price for an upgraded game, then the game's difficulty will increase.
+    New-radius gears will be added randomly when the player's balance is high enough.
+    As the difficulty increases, the player's bonus percentage increases linearly. (This is the main control over the speed of game progress.)
+    Difficulty only increases, and the gear set will not become smaller, so players should not let their balance fall too low.
+    */
+    let max = getGearCost(primeNumberAfter(availableGears[availableGears.length-1])*DEFAULT_R)*(difficulty+1)*2; //Of course, this scenario could never actually take place.
+    if($ > max){
+        if(Math.random()<NEW_R_PROB){
+            availableGears.push(primeNumberAfter(availableGears[availableGears.length-1]));
+            popups.push(new Popup("New Gear!", "You can now use a " + availableGears[availableGears.length-1] + "-gear!", "Each costs $" + Math.round(getGearCost(availableGears[availableGears.length-1]*DEFAULT_R)) +"."));
+        }
+        difficulty++;
+    }
 }
 
 class Popup {
-    constructor(title, message0, message1="", action){
+    constructor(title, message0, message1="", action=()=>{}, optional=false){
         this.title = title;
         this.message0 = message0;
         this.message1 = message1;
-        this.button = new Button(check, CANVAS_WIDTH/2, CANVAS_HEIGHT/2+0.3*POPUP_HEIGHT, BUTTON_SIZE, BUTTON_SIZE, ()=>{
+        this.button0 = new Button(check, CANVAS_WIDTH/2 + (optional? 0.6*BUTTON_SIZE : 0), CANVAS_HEIGHT/2+0.3*POPUP_HEIGHT, BUTTON_SIZE, BUTTON_SIZE, ()=>{
             action();
             removeFromArray(this, popups);
         });
+        this.button1 = optional? (new Button(x_button, CANVAS_WIDTH/2 - 0.6*BUTTON_SIZE, CANVAS_HEIGHT/2+0.3*POPUP_HEIGHT, BUTTON_SIZE, BUTTON_SIZE, ()=>{removeFromArray(this, popups);})) : null;
     }
     draw(){
         ctx.beginPath();
@@ -109,7 +155,11 @@ class Popup {
         ctx.fillText(this.message0, CANVAS_WIDTH/2, CANVAS_HEIGHT/2-0.05*POPUP_HEIGHT, 0.85*POPUP_WIDTH);
         ctx.fillText(this.message1, CANVAS_WIDTH/2, CANVAS_HEIGHT/2+0.1*POPUP_HEIGHT, 0.85*POPUP_WIDTH);
 
-        this.button.rescale();
-        this.button.draw();
+        this.button0.rescale();
+        this.button0.draw();
+        if(this.button1 != null){
+            this.button1.rescale();
+            this.button1.draw();
+        }
     }
 }

@@ -26,10 +26,16 @@ function mouse(e) {
 function resetMoveEvent(){
     document.onmousemove = function(e){
         for(i=popups.length-1; i>=0; i--){
-            if(popups[i].button.containsPoint(mouse(e).x, mouse(e).y)){
+            if(popups[i].button0.containsPoint(mouse(e).x, mouse(e).y)){
                 c.style.cursor = "pointer";
-                popups[i].button.targetScale = HOVER_SCALE;
-            } else popups[i].button.targetScale = 1;
+                popups[i].button0.targetScale = HOVER_SCALE;
+            } else popups[i].button0.targetScale = 1;
+            if(popups[i].button1 != null){
+                if(popups[i].button1.containsPoint(mouse(e).x, mouse(e).y)){
+                    c.style.cursor = "pointer";
+                    popups[i].button1.targetScale = HOVER_SCALE;
+                } else popups[i].button1.targetScale = 1;
+            }
         }
         if(i>=0){
             c.style.cursor = "pointer";
@@ -146,8 +152,12 @@ function checkButtons(e){
 function checkPopups(e){
     var i;
     for(i=popups.length-1; i>=0; i--){
-        if(popups[i].button.containsPoint(mouse(e).x, mouse(e).y)){
-            popups[i].button.action();
+        if(popups[i].button0.containsPoint(mouse(e).x, mouse(e).y)){
+            popups[i].button0.action();
+        } else if(popups[i].button1 != null){
+            if(popups[i].button1.containsPoint(mouse(e).x, mouse(e).y)){
+                popups[i].button1.action();
+            }
         }
     }
     return i>=0;
@@ -242,18 +252,19 @@ function update(){
         g.draw();
     });
     //Drawing speed ratio display
-    ctx.drawImage(throttle, 790, 25, 60, 60);
-    ctx.font = "75px JB_Mono";
-    ctx.textAlign = "center";
-    let fraction = decimalToFraction(getSpeedRatio());
-    ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
+    if(show_speed_display){
+        ctx.drawImage(throttle, 790, 25, 60, 60);
+        ctx.font = "75px JB_Mono";
+        ctx.textAlign = "center";
+        let fraction = decimalToFraction(getSpeedRatio());
+        ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
+    }
     //Drawing player money display
-    //ctx.drawImage(coins, 395, 15, 80, 80);
     ctx.font = "50px JB_Mono";
     ctx.textAlign = "center";
     let neg = Math.round(spend$)>$;
     ctx.fillStyle = neg? "red" : "black";
-    ctx.fillText((neg? "-" : "") + "$" + Math.abs($-Math.round(spend$)), 485, 70, 70);
+    ctx.fillText((neg? "-" : "") + "$" + Math.abs($-Math.round(spend$)), 485, 70, 140);
     ctx.textAlign = "left";
     ctx.fillStyle = "black";
     //Drawing buttons
@@ -261,6 +272,11 @@ function update(){
         b.rescale();
         b.draw();
     });
+    //Drawing progress bar
+    ctx.font = "20px JB_Mono";
+    ctx.textAlign = "center";
+    ctx.fillText("Difficulty: " + difficulty + ". Max gear radius: " + availableGears[availableGears.length-1] + ".", CANVAS_WIDTH/2, 700);
+    ctx.textAlign = "left";
     //Drawing popups
     popups.forEach(function(p){
         p.draw();

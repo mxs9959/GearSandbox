@@ -23,6 +23,8 @@ let DEFAULT_R = 50;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
 let C = 10;
+let PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]; //No one will go higher, most likely.
+let NEW_R_PROB = 0.5;
 
 //Images
 let throttle = new Image();
@@ -43,6 +45,8 @@ let coins = new Image();
 coins.src = "images/coins.png";
 let check = new Image();
 check.src = "images/check.png";
+let x_button = new Image();
+x_button.src = "images/x.png";
 
 //Buttons
 let BOX_RADIUS = 10;
@@ -51,7 +55,7 @@ let HOVER_SCALE = 1.5;
 let SCALE_SPEED = 0.02;
 
 //Popups
-let POPUP_WIDTH = CANVAS_WIDTH*0.35;
+let POPUP_WIDTH = CANVAS_WIDTH*0.45;
 let POPUP_HEIGHT = CANVAS_HEIGHT*0.35;
 
 //Pulleys
@@ -62,6 +66,7 @@ let LOAD_LT = 50;
 let LOAD_H = 35;
 let LOAD_LB = 75;
 let M = 0.000005;
+let GO_PAUSE = 3000;
 
 //Dependency problems that mess with my organization:
 let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};
@@ -112,6 +117,12 @@ function drawTrapezoid(x, y, lt, lb, h){
     ctx.lineTo(x-(lb-lt)/2, y+h);
     ctx.closePath();
     ctx.fill();
+}
+function primeNumberAfter(n){
+    var i;
+    for(i=0; PRIMES[i]!=n && i<PRIMES.length; i++);
+    if(i>=PRIMES.length-1) return PRIMES[PRIMES.length-1];
+    return PRIMES[i+1];
 }
 
 //Zoom transformation functions
