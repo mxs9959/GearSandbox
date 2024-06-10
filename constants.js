@@ -22,6 +22,7 @@ let DOT_POS_RATIO = 0.75;
 let DEFAULT_R = 50;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
+let C = 10;
 
 //Images
 let throttle = new Image();

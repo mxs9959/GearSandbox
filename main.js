@@ -1,6 +1,5 @@
 //Global variables
 var selected = null;
-var gears = [];
 var zoom = 1;
 var view_displacement = {x: 0, y: 0};
 var playerPulley;
@@ -117,11 +116,11 @@ function checkGears(e){
             if(selected.parent.g == null && selected.child.g == null){
                 document.onmousemove = function(e){
                     var r = vectorMagnitude(mouse(e).x-nX(selected.x), mouse(e).y-nY(selected.y));
-                    r = Math.round(r/DEFAULT_R/zoom)*DEFAULT_R; //Inverse nS
-                    if(r==0) selected.r = DEFAULT_R;
-                    else selected.r = r;
+                    r = Math.round(r/DEFAULT_R/zoom); //Inverse nS
+                    selected.r = snapR(r)*DEFAULT_R;
                     playerPulley.snap();
                     loadPulley.snap();
+                    updateSpend$();
                 }
                 document.onmouseup = function(e){
                     resetMoveEvent();
@@ -249,10 +248,14 @@ function update(){
     let fraction = decimalToFraction(getSpeedRatio());
     ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     //Drawing player money display
-    ctx.drawImage(coins, 395, 15, 80, 80);
+    //ctx.drawImage(coins, 395, 15, 80, 80);
     ctx.font = "50px JB_Mono";
+    ctx.textAlign = "center";
+    let neg = Math.round(spend$)>$;
+    ctx.fillStyle = neg? "red" : "black";
+    ctx.fillText((neg? "-" : "") + "$" + Math.abs($-Math.round(spend$)), 485, 70, 70);
     ctx.textAlign = "left";
-    ctx.fillText("$" + $, 485, 70, 70);
+    ctx.fillStyle = "black";
     //Drawing buttons
     buttons.forEach(function(b){
         b.rescale();

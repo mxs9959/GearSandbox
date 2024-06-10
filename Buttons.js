@@ -13,6 +13,7 @@ class Button {
     draw(){
         ctx.drawImage(this.image, this.x-this.scale*this.w/2, this.y-this.scale*this.h/2, this.scale*this.w, this.scale*this.h);
         if(this.boxed){
+            ctx.beginPath();
             ctx.roundRect(this.x-this.scale*this.w/2, this.y-this.scale*this.h/2, this.scale*this.w, this.scale*this.h, BOX_RADIUS);
             ctx.stroke();
         }
@@ -37,16 +38,14 @@ function newGear(){
         selected.x = anX(mouse(e).x);
         selected.y = anY(mouse(e).y);
     };
+    updateSpend$();
 }
 function removeGear(){
-    if(selected == playerPulley.gear || selected == loadPulley.gear) return;
     if(selected != null){
-        if(selected.child.g != null){
-            selected.child.g.parent = {g: null, t: 0};
-        }
-        if(selected.parent.g != null){
-            selected.parent.g.child = {g: null, t:0};
-        }
+        if(selected == playerPulley.gear || selected == loadPulley.gear) return;
+        for(let current=selected; current.child.g != null; current=current.child.g) if(current.child.g == playerPulley.gear || current.child.g == loadPulley.gear) return;
+        if(selected.parent.g != null) selected.parent.g.child = {g: null, t:0};
         removeFromArray(selected, gears);
     }
+    updateSpend$();
 }
