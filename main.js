@@ -126,7 +126,6 @@ function checkGears(e){
                     selected.r = snapR(r)*DEFAULT_R;
                     playerPulley.snap();
                     loadPulley.snap();
-                    updateSpend$();
                 }
                 document.onmouseup = function(e){
                     resetMoveEvent();
@@ -151,7 +150,8 @@ function checkButtons(e){
 
 function checkPopups(e){
     var i;
-    for(i=popups.length-1; i>=0; i--){
+    for(i=popups.length-1; i>=0&&!(popups[i].button0.containsPoint(mouse(e).x, mouse(e).y)||popups[i].button1!=null&&popups[i].button1.containsPoint(mouse(e).x, mouse(e).y)); i--);
+    if(i>=0){
         if(popups[i].button0.containsPoint(mouse(e).x, mouse(e).y)){
             popups[i].button0.action();
         } else if(popups[i].button1 != null){
@@ -159,8 +159,9 @@ function checkPopups(e){
                 popups[i].button1.action();
             }
         }
+        return true;
     }
-    return i>=0;
+    return false;
 }
 
 function checkPulleys(e){
@@ -259,14 +260,13 @@ function update(){
         let fraction = decimalToFraction(getSpeedRatio());
         ctx.fillText(fraction.n + ":" + fraction.d, 900, 80, 80);
     }
-    //Drawing player money display
-    ctx.font = "50px JB_Mono";
+    //Drawing score
+    ctx.font = "35px JB_Mono";
     ctx.textAlign = "center";
-    let neg = Math.round(spend$)>$;
-    ctx.fillStyle = neg? "red" : "black";
-    ctx.fillText((neg? "-" : "") + "$" + Math.abs($-Math.round(spend$)), 485, 70, 140);
+    ctx.fillText("Score: " + score, 485, 50);
+    ctx.font = "15px JB_Mono";
+    ctx.fillText("Difficulty increases at " + getThresPts(), 485, 80);
     ctx.textAlign = "left";
-    ctx.fillStyle = "black";
     //Drawing buttons
     buttons.forEach(function(b){
         b.rescale();
@@ -275,7 +275,7 @@ function update(){
     //Drawing progress bar
     ctx.font = "20px JB_Mono";
     ctx.textAlign = "center";
-    ctx.fillText("Difficulty: " + difficulty + ". Max gear radius: " + availableGears[availableGears.length-1] + ".", CANVAS_WIDTH/2, 700);
+    ctx.fillText("Stage: " + stage + ". Difficulty: " + difficulty + ".", CANVAS_WIDTH/2, 700);
     ctx.textAlign = "left";
     //Drawing popups
     popups.forEach(function(p){

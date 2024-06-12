@@ -38,17 +38,12 @@ function newGear(){
         selected.x = anX(mouse(e).x);
         selected.y = anY(mouse(e).y);
     };
-    updateSpend$();
 }
 function removeGear(){
     if(selected != null){
         if(selected == playerPulley.gear || selected == loadPulley.gear) return;
         for(let current=selected; current.child.g != null; current=current.child.g) if(current.child.g == playerPulley.gear || current.child.g == loadPulley.gear) return;
-        //popups.push(new Popup("Remove gears?", "You will make back half of their price.", "Confirm or deny below.", ()=>{
-            if(selected.parent.g != null) selected.parent.g.child = {g: null, t:0};
-            //$ -= Math.round(getTrainCost(selected)/2);
-            removeFromArray(selected, gears);
-            updateSpend$();
-        //}, true));
+        if(selected.parent.g != null) selected.parent.g.child = {g: null, t:0};
+        removeFromArray(selected, gears);
     }
 }

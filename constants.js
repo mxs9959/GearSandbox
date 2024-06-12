@@ -22,9 +22,7 @@ let DOT_POS_RATIO = 0.75;
 let DEFAULT_R = 50;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
-let C = 10;
 let PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]; //No one will go higher, most likely.
-let NEW_R_PROB = 0.5;
 
 //Images
 let throttle = new Image();
@@ -68,11 +66,20 @@ let LOAD_LB = 75;
 let M = 0.000005;
 let GO_PAUSE = 3000;
 
+//Game
+let PENALTY = 0.2;
+let SCORE_BASE = 50;
+let THROTTLE = 4;
+let DIFF_BONUS = 1.5;
+let R_BONUS = 1.2;
+
 //Dependency problems that mess with my organization:
 let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};
 let BG_DOT_SPACING = DEFAULT_R*2;
 
 //Helper functions
+let DEADBAND = Math.pow(10, -6);
+
 function vectorMagnitude(dx, dy){
     return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
 }
@@ -82,7 +89,6 @@ function removeFromArray(item, array){
     }
 }
 function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
-    let DEADBAND = Math.pow(10, -6);
     q = Math.abs(q);
     let whole = Math.floor(q);
     if(q%1<DEADBAND) return { n: Math.round(q), d: 1};

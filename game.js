@@ -4,23 +4,8 @@ var availableGears = [1, 2, 3, 5];
 var difficulty = 1;
 var popups = [];
 var go = false;
-var $ = 100; //Haha, the dollar sign can be a variable name!
-/*
-How money works:
-
-As the game progresses, new-radius gears will become necessary, which will demand the player to spend more money, but for greater reward.
-
-R-1 gears are free.
-Since the same ratio can be attained with 1 R-9 gear as 2 R-3 gears, gear prices will increase logarithmically.
-In fact, P(r) = C*log(r)/log(2), where C is the cost of an R-2 gear. Wow, that works out nicely!
-
-Players can sell gears back to the game for half of their original price.
-Upon successful completion of a level, players earn back whatever they spent on their gear train, plus a bonus that depends on the level's difficulty.
-
-Players continue until they can no longer afford gears to balance the weights. Then, the game is over.
-*/
-var spend$ = 0;
-var bonus = 0.25;
+var stage = 1;
+var score = 0;
 
 var show_speed_display = false;
 
@@ -30,7 +15,7 @@ function generateWeights(){
     //More difficult levels will have new availableGears factors and more composite products
     var temp = [];
     availableGears.forEach((r)=>{temp.push(r);});
-    temp.splice(0, 1);
+    for(let i=temp.length-1; i>=0; i--) if(PRIMES.indexOf(temp[i])<0) temp.splice(i, 1);
     var playerFactors = [];
     var loadFactors = [];
     var current = playerFactors;
@@ -49,8 +34,23 @@ function generateWeights(){
         loadPulley.weight *= loadFactors[i];
     }
 }
+function updateAvailableGears(){
+    if(PRIMES.indexOf(stage)>=0){
+        if(availableGears.indexOf(stage)<0){
+            availableGears.push(stage);
+            popups.push(new Popup("New Gear!", "The stage number is prime.", "You may now use " + stage + "-gears."));
+        }
+    }
+}
 
-function snapR(r){
+function getStageValue(){
+    return Math.round(SCORE_BASE*Math.pow(DIFF_BONUS, difficulty-1)*Math.pow(R_BONUS, availableGears.length-4));
+}
+function getThresPts(){
+    return SCORE_BASE*Math.pow(THROTTLE, difficulty);
+}
+
+function snapR(r){ //Relies on availableGears being in order.
     var i;
     for(i=0; r>availableGears[i] && i<availableGears.length; i++);
     if(i==0) return availableGears[0];
@@ -59,71 +59,49 @@ function snapR(r){
 }
 
 function commit(){
-    if(Math.round(spend$)>$){
-        popups.push(new Popup("You're in the hole!", "You cannot simulate the weights until your balance is positive.", "If you can't fix your balance, then it's game over!"));
-        return;
-    }
     go = true;
     window.setTimeout(function(){
-        if(getNetTorque()==0) popups.push(new Popup("Success!", "You have balanced the weights!", "You profit $" + Math.round(spend$*getBonusMultiplier()) + ".", ()=>{
-            go = false;
-            updateSpend$();
-            $ += Math.round(spend$*getBonusMultiplier());
-            gears = [new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1)];
-            updateSpend$();
-            playerPulley.gear = gears[0];
-            playerPulley.side = 1;
-            loadPulley.gear = gears[0];
-            loadPulley.side = -1;
-            playerPulley.snap();
-            loadPulley.snap();
-            assessGameProgress();
-            generateWeights();
-        }));
+        if(getNetTorque()==0) popups.push(new Popup("Success!", "You have balanced the weights!", "Points earned: " + getStageValue(), action=nextStage));
         else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
             resetGears();
+            score -= PENALTY*getStageValue();
             go=false;
-            updateSpend$();
-            $ -= Math.round(spend$*getBonusMultiplier());
         }));
     }, GO_PAUSE);
 }
 
-function getGearCost(r){
-    return C*Math.log(Math.round(r/DEFAULT_R))/Math.log(2);
-}
-function getTrainCost(g){
-    var total = 0;
-    for(; g.child.g != null; g=g.child.g) total += getGearCost(g.r);
-    return total + getGearCost(g.r);
-}
-function updateSpend$(){
-    spend$ = 0;
-    gears.forEach(function(g){
-        spend$ += getTrainCost(g);
-    });
-}
-function getBonusMultiplier(){ //This controls game rate, essentially.
-    return bonus*difficulty;
+function nextStage(){
+    go = false;
+    gears = [new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1)];
+    playerPulley.gear = gears[0];
+    playerPulley.side = 1;
+    loadPulley.gear = gears[0];
+    loadPulley.side = -1;
+    playerPulley.snap();
+    loadPulley.snap();
+    score += getStageValue();
+    stage ++;
+    if(score >= getThresPts()) difficulty ++;
+    updateAvailableGears();
+    generateWeights();
 }
 
-function assessGameProgress(){
-    /*
-    The game's progress is measured by the player's current money balance.
-    For any given task in the game, the player will have a certain set of gears available and a certain maximum quantity of gears required.
-    There is a maximum price, then, to be able to complete a task.
-    If the player's balance exceeds the maximum price for an upgraded game, then the game's difficulty will increase.
-    New-radius gears will be added randomly when the player's balance is high enough.
-    As the difficulty increases, the player's bonus percentage increases linearly. (This is the main control over the speed of game progress.)
-    Difficulty only increases, and the gear set will not become smaller, so players should not let their balance fall too low.
-    */
-    let max = getGearCost(primeNumberAfter(availableGears[availableGears.length-1])*DEFAULT_R)*(difficulty+1)*2; //Of course, this scenario could never actually take place.
-    if($ > max){
-        if(Math.random()<NEW_R_PROB){
-            availableGears.push(primeNumberAfter(availableGears[availableGears.length-1]));
-            popups.push(new Popup("New Gear!", "You can now use a " + availableGears[availableGears.length-1] + "-gear!", "Each costs $" + Math.round(getGearCost(availableGears[availableGears.length-1]*DEFAULT_R)) +"."));
+function simulateGame(turns){
+    var s = 0;
+    var e = 0;
+    var ag = 4;
+    var d = 1;
+    for(let i=1; i<=turns; i++){
+        e = Math.round(SCORE_BASE*Math.pow(DIFF_BONUS, d-1)*Math.pow(R_BONUS, ag-4));
+        console.log("Turn " + i + ": " + s + ", +" + e);
+        s += e;
+        if(PRIMES.indexOf(i)>=0){
+            if(30%i > 0) ag ++;
         }
-        difficulty++;
+        if(s >= SCORE_BASE*Math.pow(THROTTLE, d)){
+            d ++;
+            console.log("Difficulty incremented to " + d);
+        }
     }
 }
 
