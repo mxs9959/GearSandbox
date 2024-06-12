@@ -1,3 +1,6 @@
+//utils.js contains constants, global variables, and utility functions.
+
+//CONSTANTS =======================================================================================
 //Canvas
 let c = document.createElement("canvas");
 let ctx = c.getContext("2d");
@@ -10,8 +13,8 @@ let FONT = new FontFace("JB_Mono", 'url(JetBrains_Mono/static/JetBrainsMono-Regu
 FONT.load().then(function(font){
     document.fonts.add(font);
 });
-let GRAY = "#D5D5D5";
-let CORNER_RADIUS = 15;
+let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};
+let DEADBAND = Math.pow(10, -6);
 
 //Gears
 let COLOR = "#F5D3C0";
@@ -20,6 +23,7 @@ let BORDER_WIDTH = 15;
 let DOT_RAD = 9;
 let DOT_POS_RATIO = 0.75;
 let DEFAULT_R = 50;
+let BG_DOT_SPACING = DEFAULT_R*2;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
 let PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]; //No one will go higher, most likely.
@@ -55,6 +59,8 @@ let SCALE_SPEED = 0.02;
 //Popups
 let POPUP_WIDTH = CANVAS_WIDTH*0.45;
 let POPUP_HEIGHT = CANVAS_HEIGHT*0.35;
+let GRAY = "#D5D5D5";
+let CORNER_RADIUS = 15;
 
 //Pulleys
 let ROPE_THICKNESS = 3;
@@ -64,22 +70,36 @@ let LOAD_LT = 50;
 let LOAD_H = 35;
 let LOAD_LB = 75;
 let M = 0.000005;
-let GO_PAUSE = 3000;
 
 //Game
 let PENALTY = 0.2;
-let SCORE_BASE = 50;
-let THROTTLE = 4;
-let DIFF_BONUS = 1.5;
-let R_BONUS = 1.2;
+let PROG_BAR_W = 200;
+let PROG_BAR_H = 15;
+let GO_PAUSE = 3000;
 
-//Dependency problems that mess with my organization:
-let ZOOM_CENTER = {x: CANVAS_WIDTH/2, y:CANVAS_HEIGHT/2};
-let BG_DOT_SPACING = DEFAULT_R*2;
+//GLOBAL VARIABLES ================================================================================
+var selected = null; //Selected gear
+var zoom = 1;
+var view_displacement = {x: 0, y: 0};
+var playerPulley;
+var loadPulley;
+var gears = [];
+var availableGears = [1, 2, 3, 5];
+var difficulty = 1;
+var popups = [];
+var go = false;
+var stage = 1;
+var progress = 0;
+var show_speed_display = false;
 
-//Helper functions
-let DEADBAND = Math.pow(10, -6);
-
+//UTILITY FUNCTIONS =======================================================================================
+function mouse(e) {
+    var rect = c.getBoundingClientRect();
+    return {
+      x:e.clientX - rect.left,
+      y:e.clientY - rect.top
+    };
+}
 function vectorMagnitude(dx, dy){
     return Math.sqrt(Math.pow(dx,2)+Math.pow(dy,2));
 }
@@ -88,7 +108,7 @@ function removeFromArray(item, array){
         if(array[i]==item) array.splice(i, 1);
     }
 }
-function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
+function decimalToFraction(q){
     q = Math.abs(q);
     let whole = Math.floor(q);
     if(q%1<DEADBAND) return { n: Math.round(q), d: 1};
@@ -107,13 +127,6 @@ function decimalToFraction(q){ //Recursive! It works!!!!!!!!!
         n: Math.round(fraction.n + whole*fraction.d),
         d: Math.round(fraction.d)
     };
-}
-//Yes, you can count on me to incorporate differential calculus into my code.
-//Only returns correct value when point is is in QI or QIV relative to circle. (Add pi to the end to fix that.)
-//Also, I decided that I don't need this after all. :/
-function getTangentPoint(px, py, cx, cy, r, invert){
-    let s = (invert?-1:1)*(Math.PI/2 - Math.asin(r/vectorMagnitude(px-cx,py-cy))) + Math.atan((py-cy)/(px-cx));
-    return {x: r*Math.cos(s)+cx, y: r*Math.sin(s)+cy};
 }
 function drawTrapezoid(x, y, lt, lb, h){
     ctx.beginPath();
