@@ -41,14 +41,20 @@ let trash = new Image();
 trash.src = "images/trash.png";
 let play = new Image();
 play.src = "images/play.png";
-let reset = new Image();
-reset.src = "images/reset.png";
-let coins = new Image();
-coins.src = "images/coins.png";
 let check = new Image();
 check.src = "images/check.png";
 let x_button = new Image();
 x_button.src = "images/x.png";
+let tension = new Image();
+tension.src = "images/tension.png";
+let play_text = new Image();
+play_text.src = "images/play_text.png";
+let credits = new Image();
+credits.src = "images/credits.png";
+let learn = new Image();
+learn.src = "images/learn.png";
+let back = new Image();
+back.src = "images/back.png";
 
 //Buttons
 let BOX_RADIUS = 10;
@@ -71,6 +77,11 @@ let LOAD_H = 35;
 let LOAD_LB = 75;
 let M = 0.000005;
 
+//Home
+let TITLE_W = 450;
+let TITLE_H = 300/533*TITLE_W;
+let BG_GLIDE = 0.1;
+
 //Game
 let PENALTY = 0.2;
 let PROG_BAR_W = 200;
@@ -91,6 +102,7 @@ var go = false;
 var stage = 1;
 var progress = 0;
 var show_speed_display = false;
+var home_bg_direction = 2*Math.PI*Math.random();
 
 //UTILITY FUNCTIONS =======================================================================================
 function mouse(e) {
