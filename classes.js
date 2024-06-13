@@ -10,10 +10,13 @@ class Popup {
         this.button1 = optional? (new Button(x_button, CANVAS_WIDTH/2 - 0.6*BUTTON_SIZE, CANVAS_HEIGHT/2+0.3*POPUP_HEIGHT, BUTTON_SIZE, BUTTON_SIZE, ()=>{removeFromArray(this, popups);})) : null;
     }
     draw(){
+        let longest = this.message0.length>this.message1.length? this.message0.length : this.message1.length;
+        let w = longest*11*1.25;
+
         ctx.beginPath();
         ctx.fillStyle = GRAY;
         ctx.lineWidth = LINEWIDTH;
-        ctx.roundRect(CANVAS_WIDTH/2-POPUP_WIDTH/2, CANVAS_HEIGHT/2-POPUP_HEIGHT/2, POPUP_WIDTH, POPUP_HEIGHT, CORNER_RADIUS);
+        ctx.roundRect(CANVAS_WIDTH/2-w/2, CANVAS_HEIGHT/2-POPUP_HEIGHT/2, w, POPUP_HEIGHT, CORNER_RADIUS);
         ctx.stroke();
         ctx.fill();
         ctx.fillStyle = "black";
@@ -21,10 +24,10 @@ class Popup {
 
         ctx.font = "45px JB_Mono";
         ctx.textAlign = "center";
-        ctx.fillText(this.title, CANVAS_WIDTH/2, CANVAS_HEIGHT/2-0.25*POPUP_HEIGHT, 0.5*POPUP_WIDTH);
+        ctx.fillText(this.title, CANVAS_WIDTH/2, CANVAS_HEIGHT/2-0.25*POPUP_HEIGHT);
         ctx.font = "20px JB_Mono";
-        ctx.fillText(this.message0, CANVAS_WIDTH/2, CANVAS_HEIGHT/2-0.05*POPUP_HEIGHT, 0.85*POPUP_WIDTH);
-        ctx.fillText(this.message1, CANVAS_WIDTH/2, CANVAS_HEIGHT/2+0.1*POPUP_HEIGHT, 0.85*POPUP_WIDTH);
+        ctx.fillText(this.message0, CANVAS_WIDTH/2, CANVAS_HEIGHT/2-0.05*POPUP_HEIGHT);
+        ctx.fillText(this.message1, CANVAS_WIDTH/2, CANVAS_HEIGHT/2+0.1*POPUP_HEIGHT);
 
         this.button0.rescale();
         this.button0.draw();

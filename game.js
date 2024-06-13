@@ -41,9 +41,7 @@ function game_update(){
     ctx.fillText("Required gears: " + list, CANVAS_WIDTH/2, 700);
     ctx.textAlign = "left";
     //Drawing popups
-    popups.forEach(function(p){
-        p.draw();
-    });
+    if(popups.length>0) popups[popups.length-1].draw();
 }
 function getSpeedRatio(){ //Between playerPulley gear and loadPulley gear. This is the reciprocal of the torque ratio.
     var ratio = 1;

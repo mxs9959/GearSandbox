@@ -50,7 +50,7 @@ window.addEventListener("load", function(){
             new Popup("Buttons", "(Right)", "First, let's go over the buttons from top to bottom.")
         ];
     }, true));
-    popups.push(new Popup("Welcome! (2/2)", "Weights hang from gears by strings.", "Combine the gears so that the imbalance is eliminated!"));
+    popups.push(new Popup("Welcome! (2/2)", "Weights hang from \"gears\" by strings.", "Combine the gears so that the imbalance is eliminated!"));
     popups.push(new Popup("Welcome! (1/2)", "In Tension, your goal is to balance the weights.", "The weights are trapezoids labeled with their masses."));
     setInterval(update, 1/FPS);
 });
