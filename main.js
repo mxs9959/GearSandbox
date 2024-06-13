@@ -37,18 +37,21 @@ window.addEventListener("load", function(){
     playerPulley = new Pulley(gears[0], 1);
     loadPulley = new Pulley(gears[0], -1);
     generateStage();
-    popups.push(new Popup("Tour", "Welcome to Tension!", "Would you like a tour of the buttons?", ()=>{
+    popups.push(new Popup("Tour", "Would you like a tour of the buttons?", undefined, ()=>{
         popups = [
             new Popup("The End", "That's all for now!", "Have fun playing."),
             new Popup("Required Gears", "(Bottom)", "You must use gears of those radii to complete each challenge."),
             new Popup("Progress Bar", "(Top center)", "When full, the number of required gears increases."),
+            new Popup("Play", "Starts the simulation.", "Make sure your weights are balanced."),
             new Popup("Trash", "Deletes a gear and its chain.", "Be careful!"),
             new Popup("Coupled Gear", "Makes gears roll along each other.", "Works like Concentric Gear."),
             new Popup("Concentric Gear", "Makes gears rotate together with same center.", "Click a gear, then the button, then the other gear."),
             new Popup("New Gear", "The plus button creates a new gear.", "Place one anywhere and drag its edge to resize."),
-            new Popup("Buttons", "First, let's go over the buttons from top to bottom.")
+            new Popup("Buttons", "(Right)", "First, let's go over the buttons from top to bottom.")
         ];
     }, true));
+    popups.push(new Popup("Welcome! (2/2)", "Weights hang from gears by strings.", "Combine the gears so that the imbalance is eliminated!"));
+    popups.push(new Popup("Welcome! (1/2)", "In Tension, your goal is to balance the weights.", "The weights are trapezoids labeled with their masses."));
     setInterval(update, 1/FPS);
 });
 
