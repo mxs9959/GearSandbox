@@ -4,7 +4,7 @@ let home_view = new View(home_update, home_mousedownEvent, home_mousemoveEvent, 
 let home_buttons = [
    new Button(play_text, CANVAS_WIDTH/4, CANVAS_HEIGHT/2+100, 150, 60, ()=>{view_displacement={x:0,y:0};currentView = game_view;}),
    new Button(credits, CANVAS_WIDTH/2, CANVAS_HEIGHT/2+100, 0.75*230, 60, ()=>{}),
-   new Button(learn, 3*CANVAS_WIDTH/4, CANVAS_HEIGHT/2+100, 150, 60, ()=>{})
+   new Button(learn, 3*CANVAS_WIDTH/4, CANVAS_HEIGHT/2+100, 150, 60, ()=>{view_displacement={x:0,y:0};zoom=1;currentView = learn_view;})
 ];
 
 let game_view = new View(game_update, game_mouseDownEvent, game_defaultMousemoveEvent, ()=>{game_view.mousemove=game_defaultMousemoveEvent;}, game_scrollEvent);
@@ -19,6 +19,9 @@ let game_buttons = [
         popups.push(new Popup("Exit Game", "Are you sure you want to exit?", undefined, ()=>{home_bg_direction=2*Math.PI*Math.random();currentView=home_view;}, true));
     })
 ];
+
+let learn_view = new View(learn_update, learn_mousedownEvent, learn_mousemoveEvent, ()=>{}, learn_scrollEvent);
+let learn_backButton = new Button(back, 50, 50, BUTTON_SIZE, BUTTON_SIZE, ()=>{home_bg_direction=2*Math.PI*Math.random();currentView=home_view;});
 
 var currentView = home_view;
 

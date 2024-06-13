@@ -29,8 +29,6 @@ let LINEWIDTH = 2;
 let PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]; //No one will go higher, most likely.
 
 //Images
-let throttle = new Image();
-throttle.src = "images/throttle.png";
 let plus = new Image();
 plus.src = "images/plus.png";
 let concentric = new Image();
@@ -55,6 +53,12 @@ let learn = new Image();
 learn.src = "images/learn.png";
 let back = new Image();
 back.src = "images/back.png";
+let learn_1 = new Image();
+learn_1.src = "images/learn_1.png";
+let learn_2 = new Image();
+learn_2.src = "images/learn_2.png";
+let learn_3 = new Image();
+learn_3.src = "images/learn_3.png";
 
 //Buttons
 let BOX_RADIUS = 10;
@@ -81,6 +85,7 @@ let M = 0.000005;
 let TITLE_W = 450;
 let TITLE_H = 300/533*TITLE_W;
 let BG_GLIDE = 0.1;
+let SCROLL_SPEED = 20;
 
 //Game
 let PENALTY = 0.2;
