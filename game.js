@@ -34,6 +34,12 @@ function game_update(){
     ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, PROG_BAR_W, PROG_BAR_H);
     ctx.fillStyle = "black";
     ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, progress/3*PROG_BAR_W, PROG_BAR_H);
+    //Drawing required gears bar
+    var list = "";
+    for(let i=0; i<requiredGears.length; i++) list += requiredGears[i] + (i==requiredGears.length-1? "" : ", ");
+    ctx.textAlign = "center";
+    ctx.fillText("Required gears: " + list, CANVAS_WIDTH/2, 700);
+    ctx.textAlign = "left";
     //Drawing popups
     popups.forEach(function(p){
         p.draw();
@@ -184,12 +190,10 @@ function checkGears(e){
         }
     }
 }
-function snapR(r){ //Relies on availableGears being in order.
-    var i;
-    for(i=0; r>availableGears[i] && i<availableGears.length; i++);
-    if(i==0) return availableGears[0];
-    if(i==availableGears.length) return availableGears[availableGears.length-1];
-    return r >= (availableGears[i-1]+availableGears[i])/2 ? availableGears[i] : availableGears[i-1];
+function snapR(r){
+    if(r<1) return 1;
+    if(r>MAX_R) return MAX_R;
+    return r;
 }
 function checkButtons(e){
     var flag = false;
@@ -268,10 +272,15 @@ function removeGear(){
 function commit(){
     go = true;
     window.setTimeout(function(){
-        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, nextStage));
-        else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
+        let t = playerPulley.getNetTorque()==0;
+        if(t && usedAllRequired()) popups.push(new Popup("Success!", "You balanced the weights!", undefined, nextStage));
+        else if(!t) popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
             resetGears();
             if(progress > 0) progress --;
+            go=false;
+        }));
+        else popups.push(new Popup("Use Required Gears", "Your weights are balanced, but you didn't use the required gears.", "Try again!", ()=>{
+            resetGears();
             go=false;
         }));
     }, GO_PAUSE);
@@ -294,40 +303,40 @@ function nextStage(){
     if(progress<2) progress++;
     else {
         difficulty ++;
-        popups.push(new Popup("Difficulty Increase", "You've advanced to a difficulty level of " + difficulty + "!", "Onward!"));
         progress = 0;
     }
-    updateAvailableGears();
-    generateWeights();
+    generateStage();
 }
-function updateAvailableGears(){
-    if(PRIMES.indexOf(stage)>=0){
-        if(availableGears.indexOf(stage)<0){
-            availableGears.push(stage);
-            popups.push(new Popup("New Gear!", "The stage number is prime.", "You may now use " + stage + "-gears."));
-        }
-    }
-}
-function generateWeights(){
-    var temp = [];
-    availableGears.forEach((r)=>{temp.push(r);});
-    for(let i=temp.length-1; i>=0; i--) if(PRIMES.indexOf(temp[i])<0) temp.splice(i, 1);
-    var playerFactors = [];
-    var loadFactors = [];
-    var current = playerFactors;
-    while(temp.length>0){
-        let i = Math.floor(temp.length*Math.random())
-        current.push(temp[i]);
-        temp.splice(i, 1);
-        current = current==playerFactors? loadFactors : playerFactors;
-    }
-    while(playerFactors.length < difficulty) playerFactors.push(playerFactors[Math.floor(playerFactors.length*Math.random())]);
-    while(loadFactors.length < difficulty) loadFactors.push(loadFactors[Math.floor(loadFactors.length*Math.random())]);
+function generateStage(){
+    requiredGears = [];
     playerPulley.weight = 1;
     loadPulley.weight = 1;
+    var playerGears = [];
+    var loadGears = [];
     for(let i=0; i<difficulty; i++){
-        playerPulley.weight *= playerFactors[i];
-        loadPulley.weight *= loadFactors[i];
+        var r = Math.floor((MAX_R-1)*Math.random())+2;
+        while(loadGears.indexOf(r)>=0) r = Math.floor((MAX_R-1)*Math.random())+2;
+        playerGears.push(r);
+        playerPulley.weight*=r;
+        requiredGears.push(r);
+        while(playerGears.indexOf(r)>=0) r= Math.floor((MAX_R-1)*Math.random())+2;
+        loadGears.push(r);
+        loadPulley.weight*=r;
+        requiredGears.push(r);
     }
+    requiredGears = mergeSort(requiredGears);
+    let ratio = decimalToFraction(playerPulley.weight/loadPulley.weight);
+    playerPulley.weight = ratio.n;
+    loadPulley.weight = ratio.d;
 }
-
+function usedAllRequired(){
+    var g = playerPulley.gear;
+    while(g.parent.g != null) g = g.parent.g;
+    var used = [];
+    for(; g.child.g!=null; g = g.child.g) used.push(Math.round(g.r/DEFAULT_R));
+    used.push(Math.round(g.r/DEFAULT_R));
+    for(let i=0; i<requiredGears.length; i++){
+        if(used.indexOf(requiredGears[i])<0) return false;
+    }
+    return true;
+}

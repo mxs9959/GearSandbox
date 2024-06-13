@@ -26,7 +26,6 @@ let DEFAULT_R = 50;
 let BG_DOT_SPACING = DEFAULT_R*2;
 let FONT_RATIO = 0.5;
 let LINEWIDTH = 2;
-let PRIMES = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]; //No one will go higher, most likely.
 
 //Images
 let plus = new Image();
@@ -59,6 +58,10 @@ let learn_2 = new Image();
 learn_2.src = "images/learn_2.png";
 let learn_3 = new Image();
 learn_3.src = "images/learn_3.png";
+let learn_4 = new Image();
+learn_4.src = "images/learn_4.png";
+let credits_ = new Image();
+credits_.src = "images/credits_.png";
 
 //Buttons
 let BOX_RADIUS = 10;
@@ -85,13 +88,14 @@ let M = 0.000005;
 let TITLE_W = 450;
 let TITLE_H = 300/533*TITLE_W;
 let BG_GLIDE = 0.1;
-let SCROLL_SPEED = 20;
+let SCROLL_SPEED = 15;
 
 //Game
 let PENALTY = 0.2;
 let PROG_BAR_W = 200;
 let PROG_BAR_H = 15;
 let GO_PAUSE = 3000;
+let MAX_R = 15;
 
 //GLOBAL VARIABLES ================================================================================
 var selected = null; //Selected gear
@@ -100,7 +104,7 @@ var view_displacement = {x: 0, y: 0};
 var playerPulley;
 var loadPulley;
 var gears = [];
-var availableGears = [1, 2, 3, 5];
+var requiredGears = [];
 var difficulty = 1;
 var popups = [];
 var go = false;
@@ -154,11 +158,30 @@ function drawTrapezoid(x, y, lt, lb, h){
     ctx.closePath();
     ctx.fill();
 }
-function primeNumberAfter(n){
-    var i;
-    for(i=0; PRIMES[i]!=n && i<PRIMES.length; i++);
-    if(i>=PRIMES.length-1) return PRIMES[PRIMES.length-1];
-    return PRIMES[i+1];
+function mergeSort(arr){
+    if(arr.length == 1) return arr;
+    var left = [];
+    var right = [];
+    for(let i=0; i<arr.length/2; i++) left.push(arr[i]);
+    for(let i=arr.length/2; i<arr.length; i++) right.push(arr[i]);
+    return merge(mergeSort(left), mergeSort(right));
+}
+function merge(arr0, arr1){
+    var result = [];
+    var i = 0;
+    var j = 0;
+    while(i<arr0.length && j<arr1.length){
+        if(arr0[i]>arr1[j]){
+            result.push(arr1[j]);
+            j++;
+        } else {
+            result.push(arr0[i]);
+            i++;
+        }
+    }
+    if(i==arr0.length) for(; j<arr1.length; j++) result.push(arr1[j]);
+    else for(; i<arr0.length; i++) result.push(arr0[i]);
+    return result;
 }
 
 //Zoom transformation functions
