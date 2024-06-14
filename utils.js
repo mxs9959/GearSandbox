@@ -159,11 +159,11 @@ function drawTrapezoid(x, y, lt, lb, h){
     ctx.fill();
 }
 function mergeSort(arr){
-    if(arr.length == 1) return arr;
+    if(arr.length <= 1) return arr;
     var left = [];
     var right = [];
-    for(let i=0; i<arr.length/2; i++) left.push(arr[i]);
-    for(let i=arr.length/2; i<arr.length; i++) right.push(arr[i]);
+    for(let i=0; i<Math.floor(arr.length/2); i++) left.push(arr[i]);
+    for(let i=Math.floor(arr.length/2); i<arr.length; i++) right.push(arr[i]);
     return merge(mergeSort(left), mergeSort(right));
 }
 function merge(arr0, arr1){
