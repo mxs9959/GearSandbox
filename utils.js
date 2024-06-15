@@ -96,6 +96,9 @@ let PROG_BAR_W = 200;
 let PROG_BAR_H = 15;
 let GO_PAUSE = 3000;
 let MAX_R = 15;
+let MAX_WEIGHT = 100;
+let RETRY_COUNT = 10;
+let MAX_DIFFICULTY = 8;
 
 //GLOBAL VARIABLES ================================================================================
 var selected = null; //Selected gear

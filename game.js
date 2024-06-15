@@ -27,13 +27,13 @@ function game_update(){
     //Drawing progress bar
     ctx.font = "20px JB_Mono";
     ctx.textAlign = "right";
-    ctx.fillText(difficulty, CANVAS_WIDTH/2-PROG_BAR_W/2-10, 50);
+    ctx.fillText(stage, CANVAS_WIDTH/2-PROG_BAR_W/2-10, 50);
     ctx.textAlign = "left";
-    ctx.fillText(difficulty+1, CANVAS_WIDTH/2+PROG_BAR_W/2+10, 50);
+    ctx.fillText(stage+1, CANVAS_WIDTH/2+PROG_BAR_W/2+10, 50);
     ctx.fillStyle = GRAY;
     ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, PROG_BAR_W, PROG_BAR_H);
     ctx.fillStyle = "black";
-    ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, progress/3*PROG_BAR_W, PROG_BAR_H);
+    ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, progress/(1+difficulty*2)*PROG_BAR_W, PROG_BAR_H);
     //Drawing required gears bar
     var list = "";
     for(let i=0; i<requiredGears.length; i++) list += requiredGears[i] + (i==requiredGears.length-1? "" : ", ");
@@ -297,15 +297,17 @@ function nextStage(){
     loadPulley.side = -1;
     playerPulley.snap();
     loadPulley.snap();
-    stage ++;
-    if(progress<2) progress++;
+    view_displacement = {x: 0, y: 0};
+    zoom = 1;
+    if(progress<difficulty*2) progress++;
     else {
-        difficulty ++;
+        if(difficulty<MAX_DIFFICULTY) difficulty ++;
+        stage++;
         progress = 0;
     }
     generateStage();
 }
-function generateStage(){
+function generateStageRaw(){
     requiredGears = [];
     playerPulley.weight = 1;
     loadPulley.weight = 1;
@@ -322,11 +324,36 @@ function generateStage(){
         loadPulley.weight*=r;
         requiredGears.push(r);
     }
-    requiredGears = mergeSort(requiredGears);
-    let ratio = decimalToFraction(playerPulley.weight/loadPulley.weight);
-    playerPulley.weight = ratio.n;
-    loadPulley.weight = ratio.d;
+    try {
+        let ratio = decimalToFraction(playerPulley.weight/loadPulley.weight);
+        playerPulley.weight = ratio.n;
+        loadPulley.weight = ratio.d;
+        requiredGears = mergeSort(requiredGears);
+    } catch(error) {
+        console.log(error);
+        generateStageRaw();
+    }
 }
+function generateStage(){
+    generateStageRaw();
+    if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT) return;
+    var bestRequiredGears = requiredGears;
+    var bestWeightAvg = (playerPulley.weight + loadPulley.weight)/2;
+    var bestLoadWeight = loadPulley.weight;
+    for(let i=0; i<RETRY_COUNT-1; i++){
+        generateStageRaw();
+        if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT) return;
+        if((playerPulley.weight+loadPulley.weight)/2<bestWeightAvg){
+            bestRequiredGears = requiredGears;
+            bestWeightAvg = (playerPulley.weight+loadPulley.weight)/2;
+            bestLoadWeight = loadPulley.weight;
+        }
+    }
+    requiredGears = bestRequiredGears;
+    loadPulley.weight = bestLoadWeight;
+    playerPulley.weight = 2*bestWeightAvg - bestLoadWeight;
+}
+
 function usedAllRequired(){
     var g = playerPulley.gear;
     while(g.parent.g != null) g = g.parent.g;
