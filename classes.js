@@ -10,8 +10,7 @@ class Popup {
         this.button1 = optional? (new Button(x_button, CANVAS_WIDTH/2 - 0.6*BUTTON_SIZE, CANVAS_HEIGHT/2+0.3*POPUP_HEIGHT, BUTTON_SIZE, BUTTON_SIZE, ()=>{removeFromArray(this, popups);})) : null;
     }
     draw(){
-        let longest = this.message0.length>this.message1.length? this.message0.length : this.message1.length;
-        let w = longest*11*1.25;
+        let w = ctx.measureText(this.message0.length>this.message1.length? this.message0 : this.message1).width + 50;
 
         ctx.beginPath();
         ctx.fillStyle = GRAY;

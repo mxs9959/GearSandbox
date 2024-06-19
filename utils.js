@@ -115,6 +115,7 @@ var stage = 1;
 var progress = 0;
 var show_speed_display = false;
 var home_bg_direction = 2*Math.PI*Math.random();
+var tutorial_progress = -1;
 
 //UTILITY FUNCTIONS =======================================================================================
 function mouse(e) {
