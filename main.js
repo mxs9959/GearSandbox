@@ -8,12 +8,9 @@ let home_buttons = [
 ];
 
 let game_view = new View(game_update, game_mouseDownEvent, game_defaultMousemoveEvent, ()=>{game_view.mousemove=game_defaultMousemoveEvent;}, game_scrollEvent);
-let concentricB = new Button(concentric, 890, 220, BUTTON_SIZE, BUTTON_SIZE, ()=>{concentricB.boxed = !concentricB.boxed;});
-let coupledB = new Button(coupled, 890, 300, BUTTON_SIZE, BUTTON_SIZE, ()=>{coupledB.boxed = !coupledB.boxed;});
 let game_buttons = [
-    new Button(plus, 890, 140, BUTTON_SIZE, BUTTON_SIZE, newGear),
-    concentricB, coupledB,
-    new Button(trash, 890, 380, BUTTON_SIZE, BUTTON_SIZE, removeGear),
+    new Button(plus, 800, 50, BUTTON_SIZE, BUTTON_SIZE, newGear),
+    new Button(trash, 890, 50, BUTTON_SIZE, BUTTON_SIZE, removeGear),
     new Button(play, 890, 650, BUTTON_SIZE, BUTTON_SIZE, commit),
     new Button(back, 50, 50, BUTTON_SIZE, BUTTON_SIZE, function(){
         popups.push(new Popup("Exit Game", "Are you sure you want to exit?", undefined, ()=>{home_bg_direction=2*Math.PI*Math.random();tutorial_progress=-1;popups=[];currentView=home_view;}, true));
@@ -37,7 +34,7 @@ window.addEventListener("load", function(){
     playerPulley = new Pulley(gears[0], 1);
     loadPulley = new Pulley(gears[0], -1);
     generateStage();
-    popups.push(new Popup("Tutorial", "Would you like a video demo?", undefined, ()=>{showDemo = true;demo.play();}, true));
+    //popups.push(new Popup("Tutorial", "Please watch the following demo.", undefined, ()=>{showDemo = true;demo.play();}, true));
     popups.push(new Popup("Gears", "To balance the weights, we can use gears.", "Experiment with different radii to create balance!"));
     popups.push(new Popup("Goal", "Your goal in each level is to balance the weights.", "Weights are trapezoids labeled with their masses."));
     window.setInterval(update, 1/FPS);

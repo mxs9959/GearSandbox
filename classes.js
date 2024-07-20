@@ -128,26 +128,23 @@ class Gear {
             ctx.lineWidth = 1;
         }
     }
+    //The following three functions search from this to the grandparent and return the first gear that satisfies their conditions, or null.
     centerContainsPoint(x, y){
-        let p;
-        if(vectorMagnitude(x-nX(this.x), y-nY(this.y)) < nS(this.r-BORDER_WIDTH)) p = this;
-        else p = null;
-        if(this.child.g != null){
-            let b = this.child.g.centerContainsPoint(x,y);
-            if(b!=null) return b;
-            else return p;
-        } else return p;
+        if(vectorMagnitude(x-nX(this.x), y-nY(this.y)) < nS(this.r-BORDER_WIDTH)) return this;
+        if(this.parent.g != null) return this.parent.g.centerContainsPoint(x,y);
+        return null;
+    }
+    touching(g, d=0){ //Returns a gear that touches this (with a range extension of d), or null
+        if(this.relatedTo(g)) return null;
+        if(vectorMagnitude(this.x-g.x, this.y-g.y) < this.r+g.r+d) return this;
+        if(this.parent.g != null) return this.parent.g.touching(g, d);
+        return null;
     }
     edgeContainsPoint(x,y){
-        let p;
         let m = vectorMagnitude(x-nX(this.x), y-nY(this.y));
-        if(m>=nS(this.r-BORDER_WIDTH) && m<=nS(this.r)) p = this;
-        else p = null;
-        if(this.child.g != null){
-            let b = this.child.g.edgeContainsPoint(x,y);
-            if(b != null) return b;
-            else return p;
-        } else return p;
+        if(m>=nS(this.r-BORDER_WIDTH) && m<=nS(this.r)) return this;
+        if(this.parent.g != null) return this.parent.g.edgeContainsPoint(x,y);
+        return null;
     }
     move(dx, dy, indirect=false){ //Inverse nS
         this.x += dx;
@@ -191,6 +188,25 @@ class Gear {
         this.v = otherGear.v;
         this.a = otherGear.a;
     }
+    getGrandchild(){ //Returns gear at very bottom of chain
+        var g = this;
+        while(g.child.g!=null) g = g.child.g;
+        return g;
+    }
+    getGrandparent(){ //Returns gear at very top of chain
+        var g = this;
+        while(g.parent.g!=null) g = g.parent.g;
+        return g;
+    }
+    relatedTo(g){ //Returns whether this has g as an ancestor or descendant
+        var p = this.getGrandparent();
+        while(p.child.g!=null){
+            if(p==g) return true;
+            p=p.child.g;
+        }
+        if(p==g) return true;
+        return false;
+    }
 }
 class Pulley {
     constructor(gear, side){
@@ -224,13 +240,9 @@ class Pulley {
     spool(){
         if(!go) return;
         let other = this==playerPulley? loadPulley : playerPulley;
-        if(this.l<=LIMIT_L && this.side*this.gear.v<=0){
-            var g = this.gear;
-            while(g.parent.g!=null) g = g.parent.g;
-            g.v = 0;
-        } else if(!(other.l<=LIMIT_L && other.side*other.gear.v<=0)){
-            var g = this.gear;
-            while(g.parent.g!=null) g = g.parent.g;
+        if(this.l<=LIMIT_L && this.side*this.gear.v<=0) this.gear.getGrandparent().v = 0;
+        else if(!(other.l<=LIMIT_L && other.side*other.gear.v<=0)){
+            let g = this.gear.getGrandparent();
             g.v += M*this.getNetTorque()/g.r;
             this.l += this.side*this.gear.v*this.gear.r;
         }

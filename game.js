@@ -89,11 +89,11 @@ function game_defaultMousemoveEvent(e){
     } else {
         let last = gears.length -1;
         var i;
-        for(i=last; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+        for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
             c.style.cursor = "move";
         } else {
-            for(i=last; i>=0&&gears[i].edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+            for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
             if(i>=0){
                 let g = gears[i];
                 if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
@@ -132,49 +132,52 @@ function checkGears(e){
     var origY = mouse(e).y;
     var i;
     //Searching for front gear group
-    for(i=last; i>=0&&gears[i].centerContainsPoint(origX, origY)==null; i--){};
+    for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(origX, origY)==null; i--);
     if(i>=0){
-        let g = gears[i].centerContainsPoint(origX, origY);
-        var flag = false;
-        //Coupling gears if necessary
-        if(g.child.g == null){
-            if(concentricB.boxed){
-                selected.concentricWith(g);
-                concentricB.boxed = false;
-                flag = true;
-                playerPulley.snap();
-                loadPulley.snap();
-            }
-            if(coupledB.boxed){
-                selected.coupleWith(g);
-                coupledB.boxed = false;
-                flag = true;
-                playerPulley.snap();
-                loadPulley.snap();
-            }
-        }
-        //Making sure only first gears in each chain are in gears array
-        let temp = gears;
-        gears = [];
-        temp.forEach(function(gear){if(gear.parent.g == null&& gear != g) gears.push(gear);});
-        //Adding selected gear to front
-        if(g.parent.g == null) gears.push(g);
-        //Changing which gear is selected
-        selected = g;
+        selected = gears[i].getGrandchild().centerContainsPoint(origX, origY);
+        reorderGears();
         //Moving gear
-        if(!flag) game_view.mousemove = function(e){
-            g.move((mouse(e).x-origX)/zoom, (mouse(e).y-origY)/zoom);
+        game_view.mousemove = function(e){
+            selected.move((mouse(e).x-origX)/zoom, (mouse(e).y-origY)/zoom);
             origX = mouse(e).x;
             origY = mouse(e).y;
             playerPulley.snap();
             loadPulley.snap();
         }
+        game_view.mouseup = function(){
+            let last = gears.length-1;
+            //Resetting move events
+            game_view.mousemove=game_defaultMousemoveEvent;
+            game_view.mouseup = ()=>{game_view.mousemove=game_defaultMousemoveEvent;};
+            //Checking whether gear needs to be coupled
+            if(selected.parent.g == null){
+                for(i=last; i>=0&&gears[i].getGrandchild().touching(selected, -selected.r)==null; i--);
+                //Defining this block of code as function because needs to be called in two places.
+                let checkCouple = function(){
+                    for(i=last; i>=0&&gears[i].getGrandchild().touching(selected)==null; i--);
+                    if(i>=0){
+                        let g = gears[i].getGrandchild().touching(selected);
+                        if(g.child.g == null) selected.coupleWith(g);
+                        playerPulley.snap();
+                        loadPulley.snap();
+                    }
+                }
+                if(i>=0){
+                    let g = gears[i].getGrandchild().touching(selected, -selected.r);
+                    if(g.child.g == null) selected.concentricWith(g);
+                    else checkCouple();
+                    playerPulley.snap();
+                    loadPulley.snap();
+                } else checkCouple();
+            }
+            reorderGears();
+        }
         return true;
     //Resizing gears
     } else {
-        for(i=last; i>=0&&gears[i].edgeContainsPoint(origX, origY)==null; i--){};
+        for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(origX, origY)==null; i--){};
         if(i>=0){
-            selected = gears[i].edgeContainsPoint(origX, origY);
+            selected = gears[i].getGrandchild().edgeContainsPoint(origX, origY);
             if(selected.parent.g == null && selected.child.g == null){
                 game_view.mousemove = function(e){
                     var r = vectorMagnitude(mouse(e).x-nX(selected.x), mouse(e).y-nY(selected.y));
@@ -187,6 +190,13 @@ function checkGears(e){
             return true;
         }
     }
+}
+function reorderGears(){
+    //Making sure only first gears in each chain are in gears array
+    let temp = gears;
+    gears = [];
+    temp.forEach(function(gear){if(gear.parent.g == null && gear != selected) gears.push(gear);});
+    gears.push(selected);
 }
 function snapR(r){
     if(r<1) return 1;
@@ -232,9 +242,9 @@ function checkPulleys(e){
     };
     game_view.mouseup = function(e){
         var i;
-        for(i=gears.length-1; i>=0&&gears[i].centerContainsPoint(mouse(e).x, mouse(e).y) == null; i--);
+        for(i=gears.length-1; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y) == null; i--);
         if(i>=0){
-            let g = gears[i].centerContainsPoint(mouse(e).x, mouse(e).y);
+            let g = gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y);
             chosen.gear = g;
             chosen.side = anX(mouse(e).x) >= g.x ? 1 : -1;
         }

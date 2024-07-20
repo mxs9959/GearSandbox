@@ -30,10 +30,6 @@ let LINEWIDTH = 2;
 //Images
 let plus = new Image();
 plus.src = "images/plus.png";
-let concentric = new Image();
-concentric.src = "images/concentric.png";
-let coupled = new Image();
-coupled.src = "images/coupled.png";
 let trash = new Image();
 trash.src = "images/trash.png";
 let play = new Image();
@@ -62,12 +58,6 @@ let learn_4 = new Image();
 learn_4.src = "images/learn_4.png";
 let credits_ = new Image();
 credits_.src = "images/credits_.png";
-
-var demo = document.createElement("video");
-demo.src = "images/demo.mp4";
-demo.autoplay = true;
-demo.controls = false;
-demo.preload = "auto";
 
 //Buttons
 let BOX_RADIUS = 10;
