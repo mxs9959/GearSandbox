@@ -34,7 +34,7 @@ window.addEventListener("load", function(){
     playerPulley = new Pulley(gears[0], 1);
     loadPulley = new Pulley(gears[0], -1);
     generateStage();
-    //popups.push(new Popup("Tutorial", "Please watch the following demo.", undefined, ()=>{showDemo = true;demo.play();}, true));
+    popups.push(new Popup("Tutorial", "Please watch the following demo.", undefined, ()=>{showDemo = true;demo.play();}));
     popups.push(new Popup("Gears", "To balance the weights, we can use gears.", "Experiment with different radii to create balance!"));
     popups.push(new Popup("Goal", "Your goal in each level is to balance the weights.", "Weights are trapezoids labeled with their masses."));
     window.setInterval(update, 1/FPS);

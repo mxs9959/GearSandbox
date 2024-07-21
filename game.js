@@ -261,13 +261,8 @@ function game_scrollEvent(e){
 
 //BUTTON FUNCTIONS ================================================================================
 function newGear(){
-    selected = new Gear(anX(-1000), anY(-1000), 1);
+    selected = new Gear(anX(800), anY(175), 1);
     gears.push(selected);
-    game_view.mouseup = null;
-    game_view.mousemove = function(e){
-        selected.x = anX(mouse(e).x);
-        selected.y = anY(mouse(e).y);
-    };
 }
 function removeGear(){
     if(selected != null){

@@ -59,6 +59,12 @@ learn_4.src = "images/learn_4.png";
 let credits_ = new Image();
 credits_.src = "images/credits_.png";
 
+var demo = document.createElement("video");
+demo.src = "images/demo.mp4";
+demo.autoplay = true;
+demo.controls = false;
+demo.preload = "auto";
+
 //Buttons
 let BOX_RADIUS = 10;
 let BUTTON_SIZE = 55;
