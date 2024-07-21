@@ -309,6 +309,10 @@ function nextStage(){
         if(difficulty<MAX_DIFFICULTY) difficulty ++;
         stage++;
         progress = 0;
+        if(stage==2){
+            showDemo = 2;
+            demo2.play();
+        }
     }
     generateStage();
 }

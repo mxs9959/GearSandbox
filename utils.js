@@ -58,12 +58,19 @@ let learn_4 = new Image();
 learn_4.src = "images/learn_4.png";
 let credits_ = new Image();
 credits_.src = "images/credits_.png";
+let help = new Image();
+help.src = "images/help.png";
 
-var demo = document.createElement("video");
+let demo = document.createElement("video");
 demo.src = "images/demo.mp4";
 demo.autoplay = true;
 demo.controls = false;
 demo.preload = "auto";
+let demo2 = document.createElement("video");
+demo2.src = "images/demo2.mp4";
+demo2.autoplay = true;
+demo2.controls = false;
+demo2.preload = "auto";
 
 //Buttons
 let BOX_RADIUS = 10;
@@ -117,7 +124,7 @@ var stage = 1;
 var progress = 0;
 var show_speed_display = false;
 var home_bg_direction = 2*Math.PI*Math.random();
-var showDemo = false;
+var showDemo = 0;
 
 //UTILITY FUNCTIONS =======================================================================================
 function mouse(e) {
