@@ -6,7 +6,6 @@ let c = document.createElement("canvas");
 let ctx = c.getContext("2d");
 let CANVAS_WIDTH = 960;
 let CANVAS_HEIGHT = 720;
-let FPS = 30;
 let ZOOM_SPEED = 1.04;
 let BG_DOT_RAD = 2.2;
 let FONT = new FontFace("JB_Mono", 'url(JetBrains_Mono/static/JetBrainsMono-Regular.ttf)');
@@ -60,7 +59,7 @@ demo2.preload = "auto";
 let BOX_RADIUS = 10;
 let BUTTON_SIZE = 55;
 let HOVER_SCALE = 1.5;
-let SCALE_SPEED = 0.02;
+let SCALE_SPEED = 0.06;
 
 //Popups
 let POPUP_WIDTH = CANVAS_WIDTH*0.45;
@@ -75,7 +74,7 @@ let LIMIT_L = 75;
 let LOAD_LT = 50;
 let LOAD_H = 35;
 let LOAD_LB = 75;
-let M = 0.000005;
+let M = 0.0001;
 
 //Home
 let TITLE_W = 450;

@@ -24,7 +24,7 @@ window.addEventListener("load", function(){
     c.width = CANVAS_WIDTH;
     c.height = CANVAS_HEIGHT;
     c.style = "border: 1px solid black";
-    document.body.appendChild(c);
+    document.getElementById("canvasDiv").appendChild(c);
     game_view.mousemove = game_defaultMousemoveEvent;
     gears.push(new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1));
     playerPulley = new Pulley(gears[0], 1);
@@ -33,7 +33,7 @@ window.addEventListener("load", function(){
     popups.push(new Popup("Tutorial", "Please watch the following demo.", undefined, ()=>{showDemo=1;demo.play();}));
     popups.push(new Popup("Gears", "To balance the weights, use gears.", "Experiment with different combinations to create balance!"));
     popups.push(new Popup("Goal", "Your goal in each level is to balance the weights.", "Weights are trapezoids labeled with their masses."));
-    window.setInterval(update, 1/FPS);
+    window.requestAnimationFrame(update);
 });
 
 function update(){
@@ -52,7 +52,40 @@ function update(){
         document.onwheel = (e)=>{currentView.scroll(e);};
         currentView.update();
     }
+    window.requestAnimationFrame(update);
 }
+
+//HOME
+function home_update(){
+    ctx.clearRect(0,0,c.width,c.height);
+    //Drawing background
+    view_displacement.x -= BG_GLIDE*Math.cos(home_bg_direction);
+    view_displacement.y -= BG_GLIDE*Math.sin(home_bg_direction);
+    drawBg();
+    //Drawing title
+    ctx.drawImage(tension, CANVAS_WIDTH/2-TITLE_W/2, CANVAS_HEIGHT/2-TITLE_H/2-100, TITLE_W, TITLE_H);
+    //Drawing buttons
+    home_buttons.forEach(function(b){
+        b.rescale();
+        b.draw();
+    });
+}
+function home_mousedownEvent(e){
+    home_buttons.forEach(function(b){
+        if(b.containsPoint(mouse(e).x, mouse(e).y)){
+            b.action();
+        }
+    });
+}
+function home_mousemoveEvent(e){
+    c.style.cursor = "auto";
+    home_buttons.forEach(function(b){
+        if(b.containsPoint(mouse(e).x, mouse(e).y)){
+            c.style.cursor = "pointer";
+            b.targetScale = HOVER_SCALE;
+        } else b.targetScale = 1;
+    });
+};
 
 //CREDITS
 function credits_update(){
