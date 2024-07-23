@@ -34,12 +34,6 @@ function game_update(){
     ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, PROG_BAR_W, PROG_BAR_H);
     ctx.fillStyle = "black";
     ctx.fillRect(CANVAS_WIDTH/2-PROG_BAR_W/2, 35, progress/(1+difficulty*2)*PROG_BAR_W, PROG_BAR_H);
-    //Drawing required gears bar
-    var list = "";
-    for(let i=0; i<requiredGears.length; i++) list += requiredGears[i] + (i==requiredGears.length-1? "" : ", ");
-    ctx.textAlign = "center";
-    ctx.fillText("Required gears: " + list, CANVAS_WIDTH/2, 700);
-    ctx.textAlign = "left";
     //Drawing popups
     if(popups.length>0) popups[popups.length-1].draw();
 }
@@ -260,18 +254,6 @@ function game_scrollEvent(e){
 };
 
 //BUTTON FUNCTIONS ================================================================================
-function newGear(){
-    selected = new Gear(anX(800), anY(175), 1);
-    gears.push(selected);
-}
-function removeGear(){
-    if(selected != null){
-        if(selected == playerPulley.gear || selected == loadPulley.gear) return;
-        for(let current=selected; current.child.g != null; current=current.child.g) if(current.child.g == playerPulley.gear || current.child.g == loadPulley.gear) return;
-        if(selected.parent.g != null) selected.parent.g.child = {g: null, t:0};
-        removeFromArray(selected, gears);
-    }
-}
 function commit(){
     go = true;
     window.setTimeout(function(){
@@ -295,13 +277,6 @@ function resetGears(){
 }
 function nextStage(){
     go = false;
-    gears = [new Gear(ZOOM_CENTER.x, ZOOM_CENTER.y, 1)];
-    playerPulley.gear = gears[0];
-    playerPulley.side = 1;
-    loadPulley.gear = gears[0];
-    loadPulley.side = -1;
-    playerPulley.snap();
-    loadPulley.snap();
     view_displacement = {x: 0, y: 0};
     zoom = 1;
     if(progress<difficulty*2) progress++;
@@ -344,13 +319,13 @@ function generateStageRaw(){
 }
 function generateStage(){
     generateStageRaw();
-    if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT) return;
+    if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT){addGears(requiredGears);return;}
     var bestRequiredGears = requiredGears;
     var bestWeightAvg = (playerPulley.weight + loadPulley.weight)/2;
     var bestLoadWeight = loadPulley.weight;
     for(let i=0; i<RETRY_COUNT-1; i++){
         generateStageRaw();
-        if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT) return;
+        if(playerPulley.weight<=MAX_WEIGHT && loadPulley.weight<=MAX_WEIGHT){addGears(requiredGears);return;}
         if((playerPulley.weight+loadPulley.weight)/2<bestWeightAvg){
             bestRequiredGears = requiredGears;
             bestWeightAvg = (playerPulley.weight+loadPulley.weight)/2;
@@ -360,6 +335,25 @@ function generateStage(){
     requiredGears = bestRequiredGears;
     loadPulley.weight = bestLoadWeight;
     playerPulley.weight = 2*bestWeightAvg - bestLoadWeight;
+    addGears(requiredGears);
+}
+function addGears(rs){
+    gears = [];
+    zoom = 450/rs[rs.length-1]/DEFAULT_R/2;
+    var s = 0;
+    rs.forEach((r)=>{s+=r;});
+    var x = CANVAS_WIDTH/2-(rs.length*30 + 2*s*DEFAULT_R)/2;
+    rs.forEach(function(r){
+        x += r*DEFAULT_R + 15;
+        gears.push(new Gear(x, anY(CANVAS_HEIGHT/2), r));
+        x += r*DEFAULT_R + 15;
+    });
+    playerPulley.gear = gears[0];
+    playerPulley.side = 1;
+    loadPulley.gear = gears[0];
+    loadPulley.side = -1;
+    playerPulley.snap();
+    loadPulley.snap();
 }
 
 function usedAllRequired(){
