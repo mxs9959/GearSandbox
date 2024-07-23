@@ -310,8 +310,7 @@ function nextStage(){
         stage++;
         progress = 0;
         if(stage==2){
-            showDemo = 2;
-            demo2.play();
+            popups.push(new Popup("Level 2", "Tension becomes more difficult from this point.", "Please watch the following demo.", ()=>{showDemo = 2;demo2.play();}));
         }
     }
     generateStage();
