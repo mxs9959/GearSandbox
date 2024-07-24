@@ -36,11 +36,11 @@ x_button.src = "images/x.png";
 let tension = new Image();
 tension.src = "images/tension.png";
 let credits = new Image();
-credits.src = "images/credits.png";
+credits.src = "images/credits_label.png";
 let back = new Image();
 back.src = "images/back.png";
 let credits_ = new Image();
-credits_.src = "images/credits_.png";
+credits_.src = "images/credits.png";
 let help = new Image();
 help.src = "images/help.png";
 

@@ -96,8 +96,8 @@ function credits_update(){
     let x = CANVAS_WIDTH/2-715/2;
     ctx.drawImage(credits_, x, 100);
     //Drawing button
-    learn_backButton.rescale();
-    learn_backButton.draw();
+    credits_backButton.rescale();
+    credits_backButton.draw();
 }
 function credits_mousedownEvent(e){
     if(credits_backButton.containsPoint(mouse(e).x, mouse(e).y)) credits_backButton.action();
