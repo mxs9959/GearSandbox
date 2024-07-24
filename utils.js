@@ -40,7 +40,7 @@ credits.src = "images/credits_label.png";
 let back = new Image();
 back.src = "images/back.png";
 let credits_ = new Image();
-credits_.src = "images/credits.png";
+credits_.src = "images/credits_list.png";
 let help = new Image();
 help.src = "images/help.png";
 
