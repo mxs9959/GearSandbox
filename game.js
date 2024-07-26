@@ -80,30 +80,35 @@ function game_defaultMousemoveEvent(e){
             } else popups[i].button1.targetScale = 1;
         }
     }
-    let last = gears.length -1;
-    var i;
-    for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
-    if(i>=0){
+    if(Math.abs(anX(mouse(e).x)-playerPulley.ropeX)<LOAD_LT && anY(mouse(e).y)<=playerPulley.gear.y+playerPulley.l && anY(mouse(e).y)>playerPulley.gear.y ||
+    Math.abs(anX(mouse(e).x)-loadPulley.ropeX)<LOAD_LT && anY(mouse(e).y)<=loadPulley.gear.y+loadPulley.l && anY(mouse(e).y)>loadPulley.gear.y){
         c.style.cursor = "move";
-    //Not necessary in this version of the game (for resizing gears)
-    } /* else {
-        for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+    } else {
+        let last = gears.length -1;
+        var i;
+        for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
-            let g = gears[i];
-            if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
-            else c.style.cursor = "nesw-resize";
-        } */ else {
-            var flag = false;
-            game_buttons.forEach(function(b){
-                if(b.containsPoint(mouse(e).x, mouse(e).y)){
-                    flag = true;
-                    c.style.cursor = "pointer";
-                    b.targetScale = HOVER_SCALE;
-                } else b.targetScale = 1;
-            });
-            if(!flag) c.style.cursor = "auto";
-        }
-    //}
+            c.style.cursor = "move";
+        //Not necessary in this version of the game (for resizing gears)
+        } /* else {
+            for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+            if(i>=0){
+                let g = gears[i];
+                if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
+                else c.style.cursor = "nesw-resize";
+            } */ else {
+                var flag = false;
+                game_buttons.forEach(function(b){
+                    if(b.containsPoint(mouse(e).x, mouse(e).y)){
+                        flag = true;
+                        c.style.cursor = "pointer";
+                        b.targetScale = HOVER_SCALE;
+                    } else b.targetScale = 1;
+                });
+                if(!flag) c.style.cursor = "auto";
+            }
+        //}
+    }
 }
 // *** MOUSEDOWN EVENT (with additional functions) ***
 function game_mouseDownEvent(e){
@@ -237,9 +242,9 @@ function checkPulleys(e){
     };
     game_view.mouseup = function(e){
         var i;
-        for(i=gears.length-1; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y) == null; i--);
+        for(i=gears.length-1; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y) == null; i--);
         if(i>=0){
-            let g = gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y);
+            let g = gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y);
             chosen.gear = g;
             chosen.side = anX(mouse(e).x) >= g.x ? 1 : -1;
         }
@@ -270,12 +275,14 @@ function game_scrollEvent(e){
 //BUTTON FUNCTIONS ================================================================================
 function commit(){
     go = true;
+    removeFromArray(play_button, game_buttons);
     window.setTimeout(function(){
-        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, nextStage));
+        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, ()=>{nextStage;game_buttons.push(play_button);}));
         else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
             resetGears();
             if(progress > 0) progress --;
             go=false;
+            game_buttons.push(play_button);
         }));
     }, GO_PAUSE);
 }

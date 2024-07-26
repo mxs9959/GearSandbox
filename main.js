@@ -7,8 +7,9 @@ let home_buttons = [
 ];
 
 let game_view = new View(game_update, game_mouseDownEvent, game_defaultMousemoveEvent, ()=>{game_view.mousemove=game_defaultMousemoveEvent;}, game_scrollEvent);
+let play_button = new Button(play, 890, 650, BUTTON_SIZE, BUTTON_SIZE, commit);
 let game_buttons = [
-    new Button(play, 890, 650, BUTTON_SIZE, BUTTON_SIZE, commit),
+    play_button,
     new Button(back, 50, 50, BUTTON_SIZE, BUTTON_SIZE, function(){
         popups.push(new Popup("Exit Game", "Are you sure you want to exit?", undefined, ()=>{home_bg_direction=2*Math.PI*Math.random();tutorial_progress=-1;popups=[];currentView=home_view;}, true));
     }),
