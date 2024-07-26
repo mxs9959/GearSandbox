@@ -168,7 +168,8 @@ function checkGears(e){
         }
         return true;
     //Resizing gears
-    } else {
+    //Not necessary for this version
+    } /* else {
         for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(origX, origY)==null; i--){};
         if(i>=0){
             selected = gears[i].getGrandchild().edgeContainsPoint(origX, origY);
@@ -184,6 +185,7 @@ function checkGears(e){
             return true;
         }
     }
+    */
 }
 function reorderGears(){
     //Making sure only first gears in each chain are in gears array
@@ -249,23 +251,31 @@ function checkPulleys(e){
 }
 // *** SCROLL EVENT ***
 function game_scrollEvent(e){
-    if(e.deltaY<0) zoom *= ZOOM_SPEED;
-    else zoom /= ZOOM_SPEED;
+    if(e.deltaY<0){
+        let old = {x: anX(mouse(e).x), y: anY(mouse(e).y)};
+        zoom *= ZOOM_SPEED;
+        view_displacement = {
+            x: view_displacement.x + mouse(e).x - nX(old.x),
+            y: view_displacement.y + mouse(e).y - nY(old.y)
+        };
+    } else {
+        let old = {x: anX(mouse(e).x), y: anY(mouse(e).y)};
+        zoom /= ZOOM_SPEED;
+        view_displacement = {
+            x: view_displacement.x + mouse(e).x - nX(old.x),
+            y: view_displacement.y + mouse(e).y - nY(old.y)
+        };
+    }
 };
 
 //BUTTON FUNCTIONS ================================================================================
 function commit(){
     go = true;
     window.setTimeout(function(){
-        let t = playerPulley.getNetTorque()==0;
-        if(t && usedAllRequired()) popups.push(new Popup("Success!", "You balanced the weights!", undefined, nextStage));
-        else if(!t) popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
+        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, nextStage));
+        else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
             resetGears();
             if(progress > 0) progress --;
-            go=false;
-        }));
-        else popups.push(new Popup("Use Required Gears", "Your weights are balanced, but you didn't use the required gears.", "Try again!", ()=>{
-            resetGears();
             go=false;
         }));
     }, GO_PAUSE);
@@ -354,16 +364,4 @@ function addGears(rs){
     loadPulley.side = -1;
     playerPulley.snap();
     loadPulley.snap();
-}
-
-function usedAllRequired(){
-    var g = playerPulley.gear;
-    while(g.parent.g != null) g = g.parent.g;
-    var used = [];
-    for(; g.child.g!=null; g = g.child.g) used.push(Math.round(g.r/DEFAULT_R));
-    used.push(Math.round(g.r/DEFAULT_R));
-    for(let i=0; i<requiredGears.length; i++){
-        if(used.indexOf(requiredGears[i])<0) return false;
-    }
-    return true;
 }
