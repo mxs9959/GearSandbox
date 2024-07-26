@@ -86,13 +86,14 @@ function game_defaultMousemoveEvent(e){
         for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
             c.style.cursor = "move";
-        } else {
+        //Not necessary in this version of the game (for resizing gears)
+        } /* else {
             for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
             if(i>=0){
                 let g = gears[i];
                 if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
                 else c.style.cursor = "nesw-resize";
-            } else {
+            } */ else {
                 var flag = false;
                 game_buttons.forEach(function(b){
                     if(b.containsPoint(mouse(e).x, mouse(e).y)){
@@ -103,7 +104,7 @@ function game_defaultMousemoveEvent(e){
                 });
                 if(!flag) c.style.cursor = "auto";
             }
-        }
+        //}
     }
 }
 // *** MOUSEDOWN EVENT (with additional functions) ***
