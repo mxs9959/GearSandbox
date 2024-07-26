@@ -70,42 +70,40 @@ function game_defaultMousemoveEvent(e){
         if(popups[i].button0.containsPoint(mouse(e).x, mouse(e).y)){
             c.style.cursor = "pointer";
             popups[i].button0.targetScale = HOVER_SCALE;
+            return;
         } else popups[i].button0.targetScale = 1;
         if(popups[i].button1 != null){
             if(popups[i].button1.containsPoint(mouse(e).x, mouse(e).y)){
                 c.style.cursor = "pointer";
                 popups[i].button1.targetScale = HOVER_SCALE;
+                return;
             } else popups[i].button1.targetScale = 1;
         }
     }
+    let last = gears.length -1;
+    var i;
+    for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
     if(i>=0){
-        c.style.cursor = "pointer";
-    } else {
-        let last = gears.length -1;
-        var i;
-        for(i=last; i>=0&&gears[i].getGrandchild().centerContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
+        c.style.cursor = "move";
+    //Not necessary in this version of the game (for resizing gears)
+    } /* else {
+        for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
         if(i>=0){
-            c.style.cursor = "move";
-        //Not necessary in this version of the game (for resizing gears)
-        } /* else {
-            for(i=last; i>=0&&gears[i].getGrandchild().edgeContainsPoint(mouse(e).x, mouse(e).y)==null; i--);
-            if(i>=0){
-                let g = gears[i];
-                if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
-                else c.style.cursor = "nesw-resize";
-            } */ else {
-                var flag = false;
-                game_buttons.forEach(function(b){
-                    if(b.containsPoint(mouse(e).x, mouse(e).y)){
-                        flag = true;
-                        c.style.cursor = "pointer";
-                        b.targetScale = HOVER_SCALE;
-                    } else b.targetScale = 1;
-                });
-                if(!flag) c.style.cursor = "auto";
-            }
-        //}
-    }
+            let g = gears[i];
+            if((mouse(e).y-nY(g.y))/(mouse(e).x-nX(g.x))>0) c.style.cursor = "nwse-resize";
+            else c.style.cursor = "nesw-resize";
+        } */ else {
+            var flag = false;
+            game_buttons.forEach(function(b){
+                if(b.containsPoint(mouse(e).x, mouse(e).y)){
+                    flag = true;
+                    c.style.cursor = "pointer";
+                    b.targetScale = HOVER_SCALE;
+                } else b.targetScale = 1;
+            });
+            if(!flag) c.style.cursor = "auto";
+        }
+    //}
 }
 // *** MOUSEDOWN EVENT (with additional functions) ***
 function game_mouseDownEvent(e){
