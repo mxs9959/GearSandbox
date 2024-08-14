@@ -18,7 +18,7 @@ let DEADBAND = Math.pow(10, -6);
 //Gears
 let COLOR = "#F5D3C0";
 let BORDER_COLOR = "#6B5152"
-let BORDER_WIDTH = 15;
+let BORDER_WIDTH = 30;
 let DOT_RAD = 9;
 let DOT_POS_RATIO = 0.75;
 let DEFAULT_R = 50;

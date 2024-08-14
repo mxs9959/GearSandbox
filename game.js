@@ -277,7 +277,7 @@ function commit(){
     go = true;
     removeFromArray(play_button, game_buttons);
     window.setTimeout(function(){
-        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, ()=>{nextStage;game_buttons.push(play_button);}));
+        if(playerPulley.getNetTorque()==0) popups.push(new Popup("Success!", "You balanced the weights!", undefined, ()=>{nextStage();game_buttons.push(play_button);}));
         else popups.push(new Popup("Oh no!", "Your weights are unbalanced.", "Try again!", ()=>{
             resetGears();
             if(progress > 0) progress --;
